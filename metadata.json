@@ -1,0 +1,6 @@
+{
+  "name": "Black Prados K9",
+  "description": "A premium dog boarding, training, daycare, and grooming application with global content management powered by Firestore.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
