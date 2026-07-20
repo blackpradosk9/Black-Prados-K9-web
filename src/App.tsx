@@ -637,7 +637,7 @@ export default function App() {
               />
             </h1>
 
-            <p className="text-steel text-base md:text-lg max-w-lg mb-8 leading-relaxed">
+            <div className="text-steel text-base md:text-lg max-w-lg mb-8 leading-relaxed">
               <Editable
                 textKey="hero_sub"
                 defaultText="Overnight boarding with real yard time, and training programs built by certified handlers — not a kennel that also takes commands."
@@ -646,7 +646,7 @@ export default function App() {
                 editMode={editMode}
                 as="p"
               />
-            </p>
+            </div>
 
             <div className="flex flex-wrap gap-4">
               <a href="#contact" className="bg-ember text-ink hover:translate-y-[-2px] transition-transform font-bold text-sm uppercase tracking-wider px-8 py-4.5 rounded-sm">
@@ -795,7 +795,7 @@ export default function App() {
                 />
               </h2>
             </div>
-            <p className="text-steel text-sm md:text-base max-w-md leading-relaxed">
+            <div className="text-steel text-sm md:text-base max-w-md leading-relaxed">
               <Editable
                 textKey="boarding_sub"
                 defaultText="Every stay includes three yard sessions a day, a private suite, and a daily photo update — no add-on required. Payment by GPay or cash, settled directly with us — no online checkout."
@@ -804,7 +804,7 @@ export default function App() {
                 editMode={editMode}
                 as="p"
               />
-            </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-line border border-line">
@@ -829,7 +829,7 @@ export default function App() {
                     editMode={editMode}
                   />
                 </h3>
-                <p className="text-steel text-sm leading-relaxed mb-8">
+                <div className="text-steel text-sm leading-relaxed mb-8">
                   <Editable
                     textKey="board_card_desc_1"
                     defaultText="A private indoor-outdoor suite with raised bedding, three yard sessions, and twice-daily feeding to your schedule."
@@ -838,7 +838,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="font-display text-3xl text-bone">
                 <Editable
@@ -873,7 +873,7 @@ export default function App() {
                     editMode={editMode}
                   />
                 </h3>
-                <p className="text-steel text-sm leading-relaxed mb-8">
+                <div className="text-steel text-sm leading-relaxed mb-8">
                   <Editable
                     textKey="board_card_desc_2"
                     defaultText="Everything in The Den, plus supervised group play with dogs matched to your dog's energy and size."
@@ -882,7 +882,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="font-display text-3xl text-bone">
                 <Editable
@@ -917,7 +917,7 @@ export default function App() {
                     editMode={editMode}
                   />
                 </h3>
-                <p className="text-steel text-sm leading-relaxed mb-8">
+                <div className="text-steel text-sm leading-relaxed mb-8">
                   <Editable
                     textKey="board_card_desc_3"
                     defaultText="For stays over a week: a dedicated handler, one-on-one enrichment time, and a nightly video call if you want it."
@@ -926,7 +926,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="font-display text-3xl text-bone">
                 <Editable
@@ -983,7 +983,7 @@ export default function App() {
                 />
               </h2>
             </div>
-            <p className="text-steel text-sm md:text-base max-w-md leading-relaxed">
+            <div className="text-steel text-sm md:text-base max-w-md leading-relaxed">
               <Editable
                 textKey="training_sub"
                 defaultText="Every program ends with a handler session — we teach you the cues, not just the dog."
@@ -992,7 +992,7 @@ export default function App() {
                 editMode={editMode}
                 as="p"
               />
-            </p>
+            </div>
           </div>
 
           <div className="flex flex-col">
@@ -1021,7 +1021,7 @@ export default function App() {
                 </h3>
               </div>
               <div className="md:col-span-5">
-                <p className="text-steel text-sm leading-relaxed">
+                <div className="text-steel text-sm leading-relaxed">
                   <Editable
                     textKey="train_row_desc_1"
                     defaultText="Crate manners, name recognition, and the first commands — for pups 8 to 20 weeks."
@@ -1030,7 +1030,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="md:col-span-2 justify-self-start md:justify-self-end flex gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
@@ -1065,7 +1065,7 @@ export default function App() {
                 </h3>
               </div>
               <div className="md:col-span-5">
-                <p className="text-steel text-sm leading-relaxed">
+                <div className="text-steel text-sm leading-relaxed">
                   <Editable
                     textKey="train_row_desc_2"
                     defaultText="Sit, stay, heel, and recall, reinforced on-leash and off, in the house and out in the yard."
@@ -1074,7 +1074,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="md:col-span-2 justify-self-start md:justify-self-end flex gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
@@ -1109,7 +1109,7 @@ export default function App() {
                 </h3>
               </div>
               <div className="md:col-span-5">
-                <p className="text-steel text-sm leading-relaxed">
+                <div className="text-steel text-sm leading-relaxed">
                   <Editable
                     textKey="train_row_desc_3"
                     defaultText="One-on-one work for leash reactivity, separation anxiety, and resource guarding, at the dog's pace."
@@ -1118,7 +1118,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="md:col-span-2 justify-self-start md:justify-self-end flex gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
@@ -1153,7 +1153,7 @@ export default function App() {
                 </h3>
               </div>
               <div className="md:col-span-5">
-                <p className="text-steel text-sm leading-relaxed">
+                <div className="text-steel text-sm leading-relaxed">
                   <Editable
                     textKey="train_row_desc_4"
                     defaultText="Distance commands, distraction-proofing, and real-world recall for dogs ready to go off-leash."
@@ -1162,7 +1162,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="md:col-span-2 justify-self-start md:justify-self-end flex gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
@@ -1195,7 +1195,7 @@ export default function App() {
                     editMode={editMode}
                   />
                 </h4>
-                <p className="text-steel text-[13.5px] leading-relaxed">
+                <div className="text-steel text-[13.5px] leading-relaxed">
                   <Editable
                     textKey={`train_step_desc_${num}`}
                     defaultText={defaultContent[`train_step_desc_${num}`]}
@@ -1204,7 +1204,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
             ))}
           </div>
@@ -1235,7 +1235,7 @@ export default function App() {
                 />
               </h2>
             </div>
-            <p className="text-steel text-sm md:text-base max-w-md leading-relaxed">
+            <div className="text-steel text-sm md:text-base max-w-md leading-relaxed">
               <Editable
                 textKey="grooming_sub"
                 defaultText="Every groom is handled by one groomer start to finish, so your dog isn't passed station to station. Payment by GPay or cash on the day."
@@ -1244,7 +1244,7 @@ export default function App() {
                 editMode={editMode}
                 as="p"
               />
-            </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-line border border-line">
@@ -1269,7 +1269,7 @@ export default function App() {
                     editMode={editMode}
                   />
                 </h3>
-                <p className="text-steel text-sm leading-relaxed mb-8">
+                <div className="text-steel text-sm leading-relaxed mb-8">
                   <Editable
                     textKey="groom_card_desc_1"
                     defaultText="Bath with breed-appropriate shampoo, blow-dry, brush-out, ear cleaning, and nail trim."
@@ -1278,7 +1278,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="font-display text-3xl text-bone">
                 <Editable
@@ -1313,7 +1313,7 @@ export default function App() {
                     editMode={editMode}
                   />
                 </h3>
-                <p className="text-steel text-sm leading-relaxed mb-8">
+                <div className="text-steel text-sm leading-relaxed mb-8">
                   <Editable
                     textKey="groom_card_desc_2"
                     defaultText="Everything in Wash & Go, plus a breed-standard or custom haircut and a light finishing spritz."
@@ -1322,7 +1322,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="font-display text-3xl text-bone">
                 <Editable
@@ -1357,7 +1357,7 @@ export default function App() {
                     editMode={editMode}
                   />
                 </h3>
-                <p className="text-steel text-sm leading-relaxed mb-8">
+                <div className="text-steel text-sm leading-relaxed mb-8">
                   <Editable
                     textKey="groom_card_desc_3"
                     defaultText="Full groom plus deep-conditioning treatment, teeth brushing, and paw balm for cracked pads."
@@ -1366,7 +1366,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="font-display text-3xl text-bone">
                 <Editable
@@ -1403,7 +1403,7 @@ export default function App() {
                     editMode={editMode}
                   />
                 </h4>
-                <p className="text-steel text-[13.5px] leading-relaxed">
+                <div className="text-steel text-[13.5px] leading-relaxed">
                   <Editable
                     textKey={`groom_step_desc_${num}`}
                     defaultText={defaultContent[`groom_step_desc_${num}`]}
@@ -1412,7 +1412,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
             ))}
           </div>
@@ -1443,7 +1443,7 @@ export default function App() {
                 />
               </h2>
             </div>
-            <p className="text-steel text-sm md:text-base max-w-md leading-relaxed">
+            <div className="text-steel text-sm md:text-base max-w-md leading-relaxed">
               <Editable
                 textKey="daycare_sub"
                 defaultText="Dogs are grouped by size and energy, with a handler in every play yard — never left to a camera. Payment by GPay or cash on drop-off."
@@ -1452,7 +1452,7 @@ export default function App() {
                 editMode={editMode}
                 as="p"
               />
-            </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-line border border-line">
@@ -1477,7 +1477,7 @@ export default function App() {
                     editMode={editMode}
                   />
                 </h3>
-                <p className="text-steel text-sm leading-relaxed mb-8">
+                <div className="text-steel text-sm leading-relaxed mb-8">
                   <Editable
                     textKey="daycare_card_desc_1"
                     defaultText="Up to 5 hours of supervised group play, rest breaks, and fresh water on demand."
@@ -1486,7 +1486,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="font-display text-3xl text-bone">
                 <Editable
@@ -1521,7 +1521,7 @@ export default function App() {
                     editMode={editMode}
                   />
                 </h3>
-                <p className="text-steel text-sm leading-relaxed mb-8">
+                <div className="text-steel text-sm leading-relaxed mb-8">
                   <Editable
                     textKey="daycare_card_desc_2"
                     defaultText="Drop off in the morning, pick up by close — group play, rest, and a midday enrichment activity."
@@ -1530,7 +1530,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="font-display text-3xl text-bone">
                 <Editable
@@ -1565,7 +1565,7 @@ export default function App() {
                     editMode={editMode}
                   />
                 </h3>
-                <p className="text-steel text-sm leading-relaxed mb-8">
+                <div className="text-steel text-sm leading-relaxed mb-8">
                   <Editable
                     textKey="daycare_card_desc_3"
                     defaultText="Five full days, use them anytime in a rolling 30-day window. Ideal for work-week regulars."
@@ -1574,7 +1574,7 @@ export default function App() {
                     editMode={editMode}
                     as="p"
                   />
-                </p>
+                </div>
               </div>
               <div className="font-display text-3xl text-bone">
                 <Editable
@@ -1616,7 +1616,7 @@ export default function App() {
                   </h3>
                 </div>
                 <div className="md:col-span-7">
-                  <p className="text-steel text-sm leading-relaxed">
+                  <div className="text-steel text-sm leading-relaxed">
                     <Editable
                       textKey={`daycare_row_desc_${num}`}
                       defaultText={defaultContent[`daycare_row_desc_${num}`]}
@@ -1625,7 +1625,7 @@ export default function App() {
                       editMode={editMode}
                       as="p"
                     />
-                  </p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -1657,7 +1657,7 @@ export default function App() {
                 />
               </h2>
             </div>
-            <p className="text-steel text-sm md:text-base max-w-md leading-relaxed">
+            <div className="text-steel text-sm md:text-base max-w-md leading-relaxed">
               <Editable
                 textKey="gallery_sub"
                 defaultText="Photos from boarding stays, training sessions, groom days, and the play yard."
@@ -1666,7 +1666,7 @@ export default function App() {
                 editMode={editMode}
                 as="p"
               />
-            </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1913,7 +1913,7 @@ export default function App() {
               />
             </div>
             
-            <p className="text-bone text-lg md:text-xl font-medium leading-relaxed">
+            <div className="text-bone text-lg md:text-xl font-medium leading-relaxed">
               <Editable
                 textKey="about_p1"
                 defaultText="Black Prados K9 started in a converted barn in 2011, because our founder — a certified trainer — got tired of dropping her own dog at kennels that were just cages with a yard attached."
@@ -1922,9 +1922,9 @@ export default function App() {
                 editMode={editMode}
                 as="p"
               />
-            </p>
+            </div>
 
-            <p className="text-steel text-base leading-relaxed">
+            <div className="text-steel text-base leading-relaxed">
               <Editable
                 textKey="about_p2"
                 defaultText="Every handler on staff is certified in canine first aid and completes a 6-month apprenticeship under a lead trainer before working solo. Dogs are grouped by temperament, not just size, and every group play session is supervised, never left to a camera."
@@ -1933,9 +1933,9 @@ export default function App() {
                 editMode={editMode}
                 as="p"
               />
-            </p>
+            </div>
 
-            <p className="text-steel text-base leading-relaxed">
+            <div className="text-steel text-base leading-relaxed">
               <Editable
                 textKey="about_p3"
                 defaultText="We keep it small on purpose. Capping intake means every dog gets seen, not just fed and let out."
@@ -1944,7 +1944,7 @@ export default function App() {
                 editMode={editMode}
                 as="p"
               />
-            </p>
+            </div>
           </div>
 
           <div className="lg:col-span-5 grid grid-cols-2 gap-[1px] bg-line border border-line">
@@ -2059,7 +2059,7 @@ export default function App() {
               />
             </h2>
 
-            <p className="text-steel text-base max-w-sm">
+            <div className="text-steel text-base max-w-sm">
               <Editable
                 textKey="contact_sub"
                 defaultText="Every new dog starts with a free meet-and-greet, so we can match them to the right group before any stay or session."
@@ -2068,7 +2068,7 @@ export default function App() {
                 editMode={editMode}
                 as="p"
               />
-            </p>
+            </div>
 
             <div className="space-y-0.5 border-t border-line mt-8">
               <div className="flex justify-between items-center py-4 border-b border-line text-sm">
