@@ -29,6 +29,8 @@ import {
   Edit2,
   Calendar,
   MessageSquare,
+  MessageCircle,
+  Send,
   Image as ImageIcon
 } from 'lucide-react';
 import { Booking, Feedback, GalleryImage, SiteContent } from './types';
@@ -47,6 +49,17 @@ export default function App() {
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  // WhatsApp / SMS Continuation Modal States
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [successMsgDetails, setSuccessMsgDetails] = useState<{
+    name: string;
+    phone: string;
+    location: string;
+    dogName: string;
+    service: string;
+    details: string;
+  } | null>(null);
 
   // Form States
   // Admin Login
@@ -82,9 +95,24 @@ export default function App() {
   const [isFbSubmitting, setIsFbSubmitting] = useState(false);
 
   // Gallery Manager Form
+  const [galleryInputMode, setGalleryInputMode] = useState<'url' | 'file'>('file');
+  const [galleryFile, setGalleryFile] = useState<File | null>(null);
+  const [galleryFileBase64, setGalleryFileBase64] = useState<string | null>(null);
+  const [isGalleryProcessing, setIsGalleryProcessing] = useState<boolean>(false);
   const [galleryUrlInput, setGalleryUrlInput] = useState('');
   const [galleryLabelInput, setGalleryLabelInput] = useState('');
   const [editingImageId, setEditingImageId] = useState<string | null>(null);
+
+  // Admin Credentials and OTP verification states
+  const [adminCreds, setAdminCreds] = useState({ username: "PradosBlack9k", password: "blados9k@pra" });
+  const [newAdminUser, setNewAdminUser] = useState("");
+  const [newAdminPass, setNewAdminPass] = useState("");
+  const [currentAdminPassVerify, setCurrentAdminPassVerify] = useState("");
+  const [enteredOtp, setEnteredOtp] = useState("");
+  const [sentOtpCode, setSentOtpCode] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [credMessage, setCredMessage] = useState("");
 
   // Logo fallback state
   const [logoLoaded, setLogoLoaded] = useState(true);
@@ -155,6 +183,16 @@ export default function App() {
         });
         setGalleryImages(galleryData);
 
+        // 5. Fetch admin credentials
+        const credDocRef = doc(db, 'admin', 'credentials');
+        const credSnapshot = await getDoc(credDocRef);
+        if (credSnapshot.exists()) {
+          setAdminCreds(credSnapshot.data() as { username: string; password: string });
+        } else {
+          // Initialize if empty
+          await setDoc(credDocRef, { username: "PradosBlack9k", password: "blados9k@pra" });
+        }
+
       } catch (err) {
         console.error("Error loading Firestore data:", err);
       }
@@ -162,6 +200,25 @@ export default function App() {
 
     loadAllData();
   }, []);
+
+  // OTP Countdown Timer effect
+  useEffect(() => {
+    if (otpSent && otpTimer > 0) {
+      const interval = setInterval(() => {
+        setOtpTimer((prev) => {
+          if (prev <= 1) {
+            setSentOtpCode("");
+            setOtpSent(false);
+            setCredMessage("OTP has expired. Please request a new one.");
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [otpSent, otpTimer]);
 
   // --- PERSIST CONTENT CHANGES ---
   const updateContent = async (key: string, value: string) => {
@@ -174,6 +231,84 @@ export default function App() {
       await updateDoc(contentDocRef, { [key]: value });
     } catch (err) {
       console.error("Error saving content to Firestore:", err);
+    }
+  };
+
+  // --- WHATSAPP / SMS SCRIPT TRIGGERS ---
+  const triggerWhatsApp = (details: {
+    name: string;
+    phone: string;
+    location: string;
+    dogName: string;
+    service: string;
+    details: string;
+  }) => {
+    const text = `🐾 *Black Prados K9 Enquiry* 🐾\n\n` +
+                 `👤 *Name:* ${details.name}\n` +
+                 `📞 *Phone:* ${details.phone}\n` +
+                 `📍 *Location:* ${details.location}\n` +
+                 `🐕 *Dog's Name:* ${details.dogName}\n` +
+                 `✨ *Service:* ${details.service}\n` +
+                 `📝 *Details:* ${details.details}`;
+    
+    const whatsappUrl = `https://wa.me/919645051054?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const triggerSMS = (details: {
+    name: string;
+    phone: string;
+    location: string;
+    dogName: string;
+    service: string;
+    details: string;
+  }) => {
+    const text = `🐾 Black Prados K9 Enquiry 🐾\n\n` +
+                 `👤 Name: ${details.name}\n` +
+                 `📞 Phone: ${details.phone}\n` +
+                 `📍 Location: ${details.location}\n` +
+                 `🐕 Dog: ${details.dogName}\n` +
+                 `✨ Service: ${details.service}\n` +
+                 `📝 Details: ${details.details}`;
+    
+    const smsUrl = `sms:+919645051054?body=${encodeURIComponent(text)}`;
+    window.open(smsUrl, '_blank');
+  };
+
+  // --- AUTOMATED BACKGROUND WHATSAPP BOT NOTIFICATION ---
+  const sendWhatsAppBotNotification = async (details: {
+    name: string;
+    phone: string;
+    location: string;
+    dogName: string;
+    service: string;
+    details: string;
+  }) => {
+    const isBotEnabled = siteContent.whatsapp_bot_enabled === "true";
+    const botPhone = siteContent.whatsapp_bot_phone || "919645051054";
+    const botApiKey = siteContent.whatsapp_bot_apikey;
+
+    if (!isBotEnabled || !botApiKey) {
+      console.log("Automated WhatsApp Bot notifications are disabled or missing an API Key.");
+      return;
+    }
+
+    const text = `🐾 *Black Prados K9 New Enquiry* 🐾\n\n` +
+                 `👤 *Name:* ${details.name}\n` +
+                 `📞 *Phone:* ${details.phone}\n` +
+                 `📍 *Location:* ${details.location}\n` +
+                 `🐕 *Dog:* ${details.dogName}\n` +
+                 `✨ *Service:* ${details.service}\n` +
+                 `📝 *Details:* ${details.details}`;
+
+    const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(botPhone)}&text=${encodeURIComponent(text)}&apikey=${encodeURIComponent(botApiKey)}`;
+
+    try {
+      // Send GET fetch request in no-cors mode so browser doesn't block the request
+      await fetch(url, { mode: 'no-cors' });
+      console.log("Automated WhatsApp Bot notification triggered successfully!");
+    } catch (err) {
+      console.error("Failed to trigger CallMeBot WhatsApp notification:", err);
     }
   };
 
@@ -218,6 +353,19 @@ export default function App() {
           console.warn("EmailJS failed to send, but data is saved in database.", emailErr);
         }
       }
+
+      // Set WhatsApp / SMS trigger details
+      const details = {
+        name: contactName,
+        phone: contactPhone,
+        location: contactLocation,
+        dogName: contactDogName || "-",
+        service: contactService,
+        details: contactMessage || "-"
+      };
+
+      // Trigger background WhatsApp Bot notification
+      sendWhatsAppBotNotification(details);
 
       // 3. Reset form
       setContactName("");
@@ -278,6 +426,19 @@ export default function App() {
           console.warn("EmailJS modal failed:", emailErr);
         }
       }
+
+      // Set WhatsApp / SMS trigger details
+      const details = {
+        name: ownerName,
+        phone: ownerPhone,
+        location: "Intake Survey",
+        dogName: dogNameModal,
+        service: interestModal,
+        details: `Dog Breed: ${dogBreed || '-'}, Age: ${dogAge || '-'}, Email: ${ownerEmail || '-'}`
+      };
+
+      // Trigger background WhatsApp Bot notification
+      sendWhatsAppBotNotification(details);
     } catch (err) {
       console.error("Error saving intake booking:", err);
     }
@@ -325,15 +486,82 @@ export default function App() {
   // --- ADMIN PORTAL ACTIONS ---
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const ADMIN_USER = "PradosBlack9k";
-    const ADMIN_PASS = "blados9k@pra";
-
-    if (adminUser.trim() === ADMIN_USER && adminPass.trim() === ADMIN_PASS) {
+    if (adminUser.trim() === adminCreds.username && adminPass.trim() === adminCreds.password) {
       setIsAdminLoggedIn(true);
       setLoginError('');
       sessionStorage.setItem('k9_admin_logged_in', 'true');
     } else {
       setLoginError('Invalid User ID or Password. Try again.');
+    }
+  };
+
+  const handleSendOtp = async () => {
+    setCredMessage("");
+    if (!newAdminUser.trim() || !newAdminPass.trim()) {
+      setCredMessage("Please enter a new Username and Password.");
+      return;
+    }
+    if (currentAdminPassVerify !== adminCreds.password) {
+      setCredMessage("Current password is incorrect.");
+      return;
+    }
+
+    // Generate random 6-digit OTP code
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    setSentOtpCode(otp);
+    setOtpSent(true);
+    setOtpTimer(300); // 5 minutes countdown
+
+    try {
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        to_email: OWNER_EMAIL,
+        from_name: "K9 Security",
+        phone: "Verification",
+        location: "Admin Credentials Update",
+        dog_name: "N/A",
+        service: "OTP Code Request",
+        message: `Your One-Time Password (OTP) for changing the admin username and password is: ${otp}. It will expire in 5 minutes.`
+      });
+      setCredMessage("An OTP has been successfully sent to blackpradosk9@gmail.com! Please enter it below to verify and save.");
+    } catch (err) {
+      console.error("Failed to send OTP email:", err);
+      setCredMessage("Failed to send OTP email via EmailJS. Please verify configuration.");
+    }
+  };
+
+  const handleVerifyAndSaveCreds = async () => {
+    setCredMessage("");
+    if (!enteredOtp.trim()) {
+      setCredMessage("Please enter the OTP verification code.");
+      return;
+    }
+    if (enteredOtp.trim() !== sentOtpCode) {
+      setCredMessage("Incorrect OTP. Please check the code and try again.");
+      return;
+    }
+
+    try {
+      const credDocRef = doc(db, 'admin', 'credentials');
+      const updatedCreds = {
+        username: newAdminUser.trim(),
+        password: newAdminPass.trim()
+      };
+      await setDoc(credDocRef, updatedCreds);
+      setAdminCreds(updatedCreds);
+
+      // Reset form states
+      setNewAdminUser("");
+      setNewAdminPass("");
+      setCurrentAdminPassVerify("");
+      setEnteredOtp("");
+      setSentOtpCode("");
+      setOtpSent(false);
+      setOtpTimer(0);
+      setCredMessage("Success! Username and Password have been updated successfully!");
+    } catch (err) {
+      console.error("Failed to save credentials to Firestore:", err);
+      setCredMessage("Error writing updated credentials to database.");
     }
   };
 
@@ -354,19 +582,91 @@ export default function App() {
     }
   };
 
+  // Compress and convert file to Base64 (max-dimension 900px, JPEG format at 0.7 quality)
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const maxDim = 900; // Limit image dimensions to maintain lightweight Firestore payload
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxDim) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(e.target?.result as string);
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          resolve(dataUrl);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  };
+
   const handleAddGalleryImage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!galleryUrlInput.trim()) {
-      alert("Please provide an image URL.");
-      return;
-    }
-
-    const imgData: GalleryImage = {
-      url: galleryUrlInput.trim(),
-      label: galleryLabelInput.trim() || 'Gallery'
-    };
+    setIsGalleryProcessing(true);
 
     try {
+      let finalUrl = "";
+
+      if (galleryInputMode === 'file') {
+        if (galleryFileBase64) {
+          finalUrl = galleryFileBase64;
+        } else if (galleryFile) {
+          const base64 = await compressImage(galleryFile);
+          finalUrl = base64;
+        } else if (editingImageId) {
+          // If editing and no new file was uploaded, keep existing URL
+          const existingImg = galleryImages.find((img) => img.id === editingImageId);
+          if (existingImg) {
+            finalUrl = existingImg.url;
+          }
+        }
+
+        if (!finalUrl) {
+          alert("Please upload a local image file or switch to Paste URL.");
+          setIsGalleryProcessing(false);
+          return;
+        }
+      } else {
+        if (!galleryUrlInput.trim()) {
+          alert("Please enter a valid image URL.");
+          setIsGalleryProcessing(false);
+          return;
+        }
+        finalUrl = galleryUrlInput.trim();
+      }
+
+      const imgData: GalleryImage = {
+        url: finalUrl,
+        label: galleryLabelInput.trim() || 'Gallery'
+      };
+
       if (editingImageId) {
         // Update existing document
         await updateDoc(doc(db, 'gallery', editingImageId), {
@@ -380,17 +680,32 @@ export default function App() {
         const docRef = await addDoc(collection(db, 'gallery'), imgData);
         setGalleryImages((prev) => [...prev, { id: docRef.id, ...imgData }]);
       }
+
+      // Reset form states
       setGalleryUrlInput("");
       setGalleryLabelInput("");
+      setGalleryFile(null);
+      setGalleryFileBase64(null);
     } catch (err) {
       console.error("Error saving gallery image:", err);
+      alert("Failed to save image. Please check the file size and try again.");
+    } finally {
+      setIsGalleryProcessing(false);
     }
   };
 
   const handleStartEditGalleryImage = (img: GalleryImage) => {
     if (!img.id) return;
     setEditingImageId(img.id);
-    setGalleryUrlInput(img.url);
+    if (img.url.startsWith("data:")) {
+      setGalleryInputMode("file");
+      setGalleryFileBase64(img.url);
+      setGalleryUrlInput("");
+    } else {
+      setGalleryInputMode("url");
+      setGalleryUrlInput(img.url);
+      setGalleryFileBase64(null);
+    }
     setGalleryLabelInput(img.label);
   };
 
@@ -398,6 +713,8 @@ export default function App() {
     setEditingImageId(null);
     setGalleryUrlInput("");
     setGalleryLabelInput("");
+    setGalleryFile(null);
+    setGalleryFileBase64(null);
   };
 
   const handleRemoveGalleryImage = async (id: string) => {
@@ -2353,14 +2670,14 @@ export default function App() {
       {/* --- ADMIN OVERLAY DIALOG --- */}
       <AnimatePresence>
         {isAdminOpen && (
-          <div className="fixed inset-0 z-50 bg-[#0a111e]/95 overflow-y-auto p-6 md:p-12 flex flex-col text-[#d0e4f5]">
+          <div className="fixed inset-0 z-50 bg-slate-50/98 backdrop-blur-md overflow-y-auto p-6 md:p-12 flex flex-col text-slate-800">
             <div className="max-w-7xl mx-auto w-full flex-grow flex flex-col">
               
               {/* Overlay Header */}
-              <div className="flex justify-between items-center border-b border-[#1e3550] pb-6 mb-8">
+              <div className="flex justify-between items-center border-b border-slate-200 pb-6 mb-8">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">🛠</span>
-                  <h1 className="font-display text-2xl md:text-3xl tracking-wider text-[#5b9bd5]">
+                  <h1 className="font-display text-2xl md:text-3xl tracking-wider text-slate-900">
                     Black Prados K9 · Admin Dashboard
                   </h1>
                 </div>
@@ -2380,14 +2697,14 @@ export default function App() {
                   {isAdminLoggedIn && (
                     <button
                       onClick={handleAdminLogout}
-                      className="bg-transparent hover:bg-[#1a2d44] border border-[#1e3550] text-[#8bb3d9] font-semibold text-xs uppercase tracking-wider px-5 py-2.5 rounded-md cursor-pointer transition-all"
+                      className="bg-transparent hover:bg-slate-200 border border-slate-300 text-slate-600 font-semibold text-xs uppercase tracking-wider px-5 py-2.5 rounded-md cursor-pointer transition-all"
                     >
                       Log Out
                     </button>
                   )}
                   <button
                     onClick={() => setIsAdminOpen(false)}
-                    className="bg-[#1e3550] hover:bg-[#2a4b6e] text-[#aac7e8] font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-md cursor-pointer transition-all"
+                    className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-md cursor-pointer transition-all"
                   >
                     Close Panel
                   </button>
@@ -2397,31 +2714,31 @@ export default function App() {
               {/* Login State Gate */}
               {!isAdminLoggedIn ? (
                 <div className="flex-grow flex items-center justify-center py-12">
-                  <div className="bg-[#0f1a2b] border border-[#1e3550] rounded-lg p-8 md:p-10 w-full max-w-md shadow-2xl">
-                    <h2 className="font-display text-2xl text-[#5b9bd5] text-center mb-6 uppercase tracking-wider">
+                  <div className="bg-white border border-slate-200 rounded-lg p-8 md:p-10 w-full max-w-md shadow-xl">
+                    <h2 className="font-display text-2xl text-slate-900 text-center mb-6 uppercase tracking-wider">
                       Admin Portal Login
                     </h2>
                     <form onSubmit={handleAdminLogin} className="space-y-4">
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase font-bold tracking-wider text-[#8bb3d9]">User ID</label>
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">User ID</label>
                         <input
                           value={adminUser}
                           onChange={(e) => setAdminUser(e.target.value)}
                           type="text"
                           required
                           placeholder="Enter user ID"
-                          className="bg-[#0d1a2b] border border-[#1e3550] text-[#d0e4f5] focus:border-[#5b9bd5] focus:outline-none p-3 rounded-sm text-sm"
+                          className="bg-slate-50 border border-slate-200 text-slate-800 focus:border-ember focus:outline-none p-3 rounded-sm text-sm"
                         />
                       </div>
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase font-bold tracking-wider text-[#8bb3d9]">Password</label>
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Password</label>
                         <input
                           value={adminPass}
                           onChange={(e) => setAdminPass(e.target.value)}
                           type="password"
                           required
                           placeholder="Enter password"
-                          className="bg-[#0d1a2b] border border-[#1e3550] text-[#d0e4f5] focus:border-[#5b9bd5] focus:outline-none p-3 rounded-sm text-sm"
+                          className="bg-slate-50 border border-slate-200 text-slate-800 focus:border-ember focus:outline-none p-3 rounded-sm text-sm"
                         />
                       </div>
                       <button type="submit" className="w-full bg-[#1e4b6e] hover:bg-[#2a6a94] text-white font-bold uppercase tracking-wider p-3.5 rounded-sm transition-all cursor-pointer text-xs mt-2">
@@ -2429,7 +2746,7 @@ export default function App() {
                       </button>
 
                       {loginError && (
-                        <div className="flex items-center gap-2 text-xs text-red-400 font-semibold mt-4 text-center justify-center bg-red-950/40 p-2 border border-red-900/50 rounded-sm">
+                        <div className="flex items-center gap-2 text-xs text-red-600 font-semibold mt-4 text-center justify-center bg-red-50 p-2 border border-red-200 rounded-sm">
                           <ShieldAlert className="w-4 h-4 flex-shrink-0" />
                           <span>{loginError}</span>
                         </div>
@@ -2444,36 +2761,132 @@ export default function App() {
                   {/* Left Column: Gallery & System Config */}
                   <div className="lg:col-span-5 space-y-6">
                     {/* Gallery Manager */}
-                    <div className="bg-[#0f1a2b] border border-[#1e3550] rounded-lg p-6">
-                      <h3 className="font-display text-lg text-[#5b9bd5] mb-4 pb-2 border-b border-[#1a2d44] flex items-center gap-2">
-                        <ImageIcon className="w-4 h-4" />
+                    <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
+                      <h3 className="font-display text-lg text-slate-800 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4 text-ember" />
                         <span>{editingImageId ? "📝 Edit Gallery Image" : "🖼️ Gallery Manager"}</span>
                       </h3>
                       <form onSubmit={handleAddGalleryImage} className="space-y-4 mb-6">
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-[10px] uppercase font-bold tracking-wider text-[#8bb3d9]">Image URL</label>
-                          <input
-                            value={galleryUrlInput}
-                            onChange={(e) => setGalleryUrlInput(e.target.value)}
-                            type="url"
-                            required
-                            placeholder="https://images.unsplash.com/photo-..."
-                            className="bg-[#0d1a2b] border border-[#1e3550] text-[#d0e4f5] p-2.5 rounded-sm text-xs"
-                          />
+                        {/* Input Mode Selector */}
+                        <div className="flex gap-2 p-1 bg-slate-50 border border-slate-200 rounded-md mb-2">
+                          <button
+                            type="button"
+                            onClick={() => setGalleryInputMode('file')}
+                            className={`flex-grow text-center py-1.5 px-3 rounded-sm text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                              galleryInputMode === 'file'
+                                ? 'bg-slate-800 text-white'
+                                : 'text-slate-500 hover:text-slate-800'
+                            }`}
+                          >
+                            📁 Local Image File
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setGalleryInputMode('url')}
+                            className={`flex-grow text-center py-1.5 px-3 rounded-sm text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                              galleryInputMode === 'url'
+                                ? 'bg-slate-800 text-white'
+                                : 'text-slate-500 hover:text-slate-800'
+                            }`}
+                          >
+                            🔗 Paste URL
+                          </button>
                         </div>
+
+                        {galleryInputMode === 'file' ? (
+                          <div className="space-y-3">
+                            <div className="flex flex-col gap-1.5">
+                              <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                                Choose Image File
+                              </label>
+                              <div className="relative border border-dashed border-slate-300 hover:border-ember bg-slate-50 rounded-sm p-4 text-center cursor-pointer transition-colors group">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0] || null;
+                                    setGalleryFile(file);
+                                    if (file) {
+                                      const reader = new FileReader();
+                                      reader.onload = (ev) => {
+                                        setGalleryFileBase64(ev.target?.result as string);
+                                      };
+                                      reader.readAsDataURL(file);
+                                    } else {
+                                      setGalleryFileBase64(null);
+                                    }
+                                  }}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <div className="flex flex-col items-center justify-center gap-1">
+                                  <ImageIcon className="w-5 h-5 text-slate-400 group-hover:text-ember transition-colors" />
+                                  <span className="text-[11px] text-slate-600 font-medium truncate max-w-full px-2">
+                                    {galleryFile ? galleryFile.name : "Select or Drop Image"}
+                                  </span>
+                                  <span className="text-[8px] text-slate-400">
+                                    Supports PNG, JPG, WEBP, GIF
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {galleryFileBase64 && (
+                              <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 p-2 rounded-sm">
+                                <img
+                                  src={galleryFileBase64}
+                                  alt="Local upload preview"
+                                  className="w-10 h-10 rounded-sm object-cover border border-slate-200 bg-white"
+                                />
+                                <div className="flex-grow min-w-0">
+                                  <div className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Preview Loaded</div>
+                                  <div className="text-[9px] text-slate-500 truncate">
+                                    {galleryFile ? `${(galleryFile.size / 1024 / 1024).toFixed(2)} MB` : "Existing Image"}
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setGalleryFile(null);
+                                    setGalleryFileBase64(null);
+                                  }}
+                                  className="text-xs text-red-500 hover:text-red-600 px-2 py-1 cursor-pointer"
+                                >
+                                  Clear
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Image URL</label>
+                            <input
+                              value={galleryUrlInput}
+                              onChange={(e) => setGalleryUrlInput(e.target.value)}
+                              type="url"
+                              placeholder="https://images.unsplash.com/photo-..."
+                              className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-ember focus:outline-none"
+                            />
+                          </div>
+                        )}
+
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[10px] uppercase font-bold tracking-wider text-[#8bb3d9]">Label / Category</label>
+                          <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Label / Category</label>
                           <input
                             value={galleryLabelInput}
                             onChange={(e) => setGalleryLabelInput(e.target.value)}
                             type="text"
                             placeholder="e.g. Play Yard, Training Session"
-                            className="bg-[#0d1a2b] border border-[#1e3550] text-[#d0e4f5] p-2.5 rounded-sm text-xs"
+                            className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-ember focus:outline-none"
                           />
                         </div>
+
                         <div className="flex gap-2">
-                          <button type="submit" className="flex-grow bg-[#1e4b6e] hover:bg-[#2a6a94] text-white font-bold uppercase tracking-wider p-2.5 rounded-sm transition-all text-[11px] cursor-pointer">
-                            {editingImageId ? "Save Changes" : "Add Image to Gallery"}
+                          <button
+                            type="submit"
+                            disabled={isGalleryProcessing}
+                            className="flex-grow bg-slate-800 hover:bg-slate-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold uppercase tracking-wider p-2.5 rounded-sm transition-all text-[11px] cursor-pointer"
+                          >
+                            {isGalleryProcessing ? "Processing..." : (editingImageId ? "Save Changes" : "Add Image")}
                           </button>
                           {editingImageId && (
                             <button
@@ -2490,17 +2903,17 @@ export default function App() {
                       {/* Display Gallery Grid for Admin */}
                       <div className="grid grid-cols-3 gap-2 max-h-[220px] overflow-y-auto pr-2">
                         {galleryImages.map((img) => (
-                          <div key={img.id} className="aspect-square relative rounded-md border border-[#1e3550] bg-[#0d1a2b] group overflow-hidden">
+                          <div key={img.id} className="aspect-square relative rounded-md border border-slate-200 bg-slate-100 group overflow-hidden">
                             <img src={img.url} alt={img.label} className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 text-center">
-                              <span className="text-[9px] text-[#aac7e8] font-bold uppercase line-clamp-2">{img.label}</span>
+                              <span className="text-[9px] text-white font-bold uppercase line-clamp-2">{img.label}</span>
                             </div>
                             <button
                               onClick={() => handleStartEditGalleryImage(img)}
-                              className={`absolute top-1 right-8 p-1 rounded-full border transition-all cursor-pointer ${
+                              className={`absolute top-1 right-8 p-1 rounded-full border transition-all cursor-pointer z-10 ${
                                 editingImageId === img.id
                                   ? 'bg-amber-950/80 border-amber-900/50 text-amber-400'
-                                  : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                                  : 'bg-white/90 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                               }`}
                               title="Edit/Replace Image"
                             >
@@ -2508,7 +2921,7 @@ export default function App() {
                             </button>
                             <button
                               onClick={() => handleRemoveGalleryImage(img.id!)}
-                              className="absolute top-1 right-1 bg-red-950/80 border border-red-900/50 text-red-400 p-1 rounded-full hover:bg-red-800 hover:text-white transition-all cursor-pointer"
+                              className="absolute top-1 right-1 bg-red-50/90 border border-red-200 text-red-600 p-1 rounded-full hover:bg-red-600 hover:text-white transition-all cursor-pointer z-10"
                               title="Delete Image"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -2516,25 +2929,190 @@ export default function App() {
                           </div>
                         ))}
                       </div>
-                      <p className="text-[10px] text-[#556b82] mt-3">
+                      <p className="text-[10px] text-slate-400 mt-3">
                         * Added images are stored globally in Firestore and render live in the public gallery!
-                      </p>
-                    </div>
+                    </p>
+                  </div>
 
-                    {/* Quick System Info */}
-                    <div className="bg-[#0f1a2b] border border-[#1e3550] rounded-lg p-6 text-xs text-[#8bb3d9] space-y-2">
-                      <div className="font-bold text-sm text-[#5b9bd5] mb-2">💾 Database Status</div>
+                  {/* WhatsApp Notification Bot Config */}
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4 shadow-sm">
+                    <h3 className="font-display text-lg text-emerald-600 pb-2 border-b border-slate-100 flex items-center gap-2">
+                      <MessageCircle className="w-5 h-5 text-emerald-500" />
+                      <span>🤖 Automated WhatsApp Bot</span>
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                          Enable Bot Notifications
+                        </label>
+                        <input
+                          type="checkbox"
+                          checked={siteContent.whatsapp_bot_enabled === "true"}
+                          onChange={async (e) => {
+                            const val = e.target.checked ? "true" : "false";
+                            await updateContent("whatsapp_bot_enabled", val);
+                          }}
+                          className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                          WhatsApp Phone (with Country Code)
+                        </label>
+                        <input
+                          value={siteContent.whatsapp_bot_phone || "919645051054"}
+                          onChange={async (e) => {
+                            await updateContent("whatsapp_bot_phone", e.target.value.trim());
+                          }}
+                          type="text"
+                          placeholder="e.g. 919645051054"
+                          className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-emerald-500 focus:outline-none"
+                        />
+                        <p className="text-[9px] text-slate-400">
+                          Do not include symbols like + or -. (e.g., 919645051054)
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                          CallMeBot API Key (FREE)
+                        </label>
+                        <input
+                          value={siteContent.whatsapp_bot_apikey || ""}
+                          onChange={async (e) => {
+                            await updateContent("whatsapp_bot_apikey", e.target.value.trim());
+                          }}
+                          type="password"
+                          placeholder="Enter CallMeBot API key"
+                          className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-emerald-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-sm space-y-2 text-[11px] text-slate-600">
+                        <p className="font-bold text-emerald-700 flex items-center gap-1.5">
+                          <span>💡</span> Setup FREE WhatsApp Bot in 15 seconds:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1.5">
+                          <li>Add <span className="font-mono text-slate-900 font-semibold text-xs">+34 621 07 36 12</span> to your contacts under 'WhatsApp Bot'.</li>
+                          <li>Send a WhatsApp message: <span className="font-mono text-slate-900 font-semibold text-xs">I allow callmebot to send me messages</span></li>
+                          <li>Copy the API Key they reply with and paste it above!</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Change Admin Credentials Section */}
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4 shadow-sm">
+                    <h3 className="font-display text-lg text-amber-600 pb-2 border-b border-slate-100 flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-amber-500" />
+                      <span>🔑 Change Admin Credentials</span>
+                    </h3>
+
+                    <div className="space-y-4 text-xs">
+                      <div className="bg-amber-50 border border-amber-200 p-3 rounded-sm text-amber-800 text-[11px] leading-relaxed">
+                        To update credentials, enter your new username, new password, and current password. Then click <strong>Send OTP</strong>.
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                          New Username / User ID
+                        </label>
+                        <input
+                          value={newAdminUser}
+                          onChange={(e) => setNewAdminUser(e.target.value)}
+                          type="text"
+                          placeholder="e.g. AdminK9"
+                          className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-amber-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                          New Password
+                        </label>
+                        <input
+                          value={newAdminPass}
+                          onChange={(e) => setNewAdminPass(e.target.value)}
+                          type="password"
+                          placeholder="Enter new secure password"
+                          className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-amber-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                          Current Password (Verification)
+                        </label>
+                        <input
+                          value={currentAdminPassVerify}
+                          onChange={(e) => setCurrentAdminPassVerify(e.target.value)}
+                          type="password"
+                          placeholder="Enter your current password"
+                          className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-amber-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={handleSendOtp}
+                          disabled={otpSent && otpTimer > 0}
+                          className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold uppercase tracking-wider text-xs p-3 rounded-sm transition-all cursor-pointer text-center"
+                        >
+                          {otpSent && otpTimer > 0 ? `OTP Sent (${otpTimer}s)` : "📩 Send OTP to blackpradosk9@gmail.com"}
+                        </button>
+                      </div>
+
+                      {otpSent && (
+                        <div className="border border-emerald-200 bg-emerald-50 p-3.5 rounded-sm space-y-3">
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-700">
+                              Enter 6-Digit OTP Code
+                            </label>
+                            <input
+                              value={enteredOtp}
+                              onChange={(e) => setEnteredOtp(e.target.value)}
+                              type="text"
+                              maxLength={6}
+                              placeholder="e.g. 123456"
+                              className="bg-white border border-emerald-300 text-slate-800 p-2.5 rounded-sm text-xs font-mono text-center tracking-widest focus:border-emerald-500 focus:outline-none"
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleVerifyAndSaveCreds}
+                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wider text-xs p-2.5 rounded-sm transition-all cursor-pointer text-center"
+                          >
+                            ✓ Verify & Save New Credentials
+                          </button>
+                        </div>
+                      )}
+
+                      {credMessage && (
+                        <div className="text-xs font-semibold p-2.5 rounded-sm text-center bg-slate-50 border border-slate-200 text-amber-700">
+                          {credMessage}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quick System Info */}
+                    <div className="bg-white border border-slate-200 rounded-lg p-6 text-xs text-slate-600 space-y-2 shadow-sm">
+                      <div className="font-bold text-sm text-slate-800 mb-2">💾 Database Status</div>
                       <div className="flex justify-between">
                         <span>Connected Database ID:</span>
-                        <span className="font-mono text-[#aac7e8]">ai-studio-79871270...</span>
+                        <span className="font-mono text-slate-500">ai-studio-79871270...</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Database System:</span>
-                        <span className="text-emerald-400 font-semibold">● Live Cloud Firestore</span>
+                        <span className="text-emerald-600 font-semibold">● Live Cloud Firestore</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Global Access Level:</span>
-                        <span className="text-[#aac7e8]">Standard Static Admin (All Internet)</span>
+                        <span className="text-slate-500">Standard Static Admin (All Internet)</span>
                       </div>
                     </div>
                   </div>
@@ -2542,59 +3120,59 @@ export default function App() {
                   {/* Right Column: Bookings & User Feedback */}
                   <div className="lg:col-span-7 space-y-6">
                     {/* Booking Requests */}
-                    <div className="bg-[#0f1a2b] border border-[#1e3550] rounded-lg p-6">
-                      <h3 className="font-display text-lg text-[#5b9bd5] mb-4 pb-2 border-b border-[#1a2d44] flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
+                    <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
+                      <h3 className="font-display text-lg text-slate-800 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-slate-600" />
                         <span>📋 Booking & Meet-and-Greet Requests</span>
                       </h3>
                       <div className="max-h-[300px] overflow-y-auto pr-2 space-y-3">
                         {bookings.length === 0 ? (
-                          <div className="text-[#556b82] text-xs py-12 text-center">
+                          <div className="text-slate-400 text-xs py-12 text-center">
                             No booking requests received yet.
                           </div>
                         ) : (
                           bookings.map((bk) => (
-                            <div key={bk.id} className="bg-[#0d1a2b] border border-[#1a2d44] p-4 rounded-sm text-xs space-y-2 relative">
+                            <div key={bk.id} className="bg-slate-50 border border-slate-200 p-4 rounded-sm text-xs space-y-2 relative">
                               <span className={`absolute top-3 right-3 text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                                bk.source === 'modal' ? 'bg-amber-950 text-ember border border-ember/30' : 'bg-blue-950 text-blue-400 border border-blue-900/30'
+                                bk.source === 'modal' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
                               }`}>
                                 {bk.source === 'modal' ? 'Intake' : 'Contact'}
                               </span>
 
                               <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                  <span className="text-[#556b82] block text-[10px] uppercase font-bold">Owner</span>
-                                  <span className="text-bone font-semibold text-sm">{bk.name}</span>
+                                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Owner</span>
+                                  <span className="text-slate-800 font-semibold text-sm">{bk.name}</span>
                                 </div>
                                 <div>
-                                  <span className="text-[#556b82] block text-[10px] uppercase font-bold">Phone</span>
-                                  <span className="text-[#aac7e8] font-mono">{bk.phone}</span>
+                                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Phone</span>
+                                  <span className="text-slate-600 font-mono">{bk.phone}</span>
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-3 gap-2 border-t border-[#1a2d44]/50 pt-2">
+                              <div className="grid grid-cols-3 gap-2 border-t border-slate-200 pt-2">
                                 <div>
-                                  <span className="text-[#556b82] block text-[9px] uppercase font-bold">Dog Name</span>
-                                  <span className="text-bone font-medium">{bk.dogName}</span>
+                                  <span className="text-slate-400 block text-[9px] uppercase font-bold">Dog Name</span>
+                                  <span className="text-slate-700 font-medium">{bk.dogName}</span>
                                 </div>
                                 <div>
-                                  <span className="text-[#556b82] block text-[9px] uppercase font-bold">Service</span>
+                                  <span className="text-slate-400 block text-[9px] uppercase font-bold">Service</span>
                                   <span className="text-ember font-medium uppercase">{bk.service}</span>
                                 </div>
                                 <div>
-                                  <span className="text-[#556b82] block text-[9px] uppercase font-bold">Location</span>
-                                  <span className="text-[#aac7e8] truncate" title={bk.location}>{bk.location}</span>
+                                  <span className="text-slate-400 block text-[9px] uppercase font-bold">Location</span>
+                                  <span className="text-slate-600 truncate" title={bk.location}>{bk.location}</span>
                                 </div>
                               </div>
 
                               {bk.message && bk.message !== "-" && (
-                                <div className="bg-[#0a111e] p-2 rounded-sm text-[#8bb3d9] border-l border-ember mt-2">
-                                  <span className="text-[#556b82] block text-[9px] uppercase font-bold mb-0.5">Details / Notes</span>
+                                <div className="bg-white p-2 rounded-sm text-slate-600 border-l border-ember mt-2">
+                                  <span className="text-slate-400 block text-[9px] uppercase font-bold mb-0.5">Details / Notes</span>
                                   {bk.message}
                                 </div>
                               )}
 
-                              <div className="text-[10px] text-[#556b82] flex justify-between items-center pt-1">
+                              <div className="text-[10px] text-slate-400 flex justify-between items-center pt-1">
                                 <span>Received: {bk.time}</span>
                               </div>
                             </div>
@@ -2604,25 +3182,25 @@ export default function App() {
                     </div>
 
                     {/* Feedback Admin List */}
-                    <div className="bg-[#0f1a2b] border border-[#1e3550] rounded-lg p-6">
-                      <h3 className="font-display text-lg text-[#5b9bd5] mb-4 pb-2 border-b border-[#1a2d44] flex items-center gap-2">
-                        <MessageSquare className="w-4 h-4" />
+                    <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
+                      <h3 className="font-display text-lg text-slate-800 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-slate-600" />
                         <span>💬 Feedback Messages</span>
                       </h3>
                       <div className="max-h-[220px] overflow-y-auto pr-2 space-y-3">
                         {feedbackList.length === 0 ? (
-                          <div className="text-[#556b82] text-xs py-6 text-center">
+                          <div className="text-slate-400 text-xs py-6 text-center">
                             No custom user feedback received yet.
                           </div>
                         ) : (
                           feedbackList.map((fb) => (
-                            <div key={fb.id} className="bg-[#0d1a2b] border border-[#1a2d44] p-3 rounded-sm text-xs space-y-1">
+                            <div key={fb.id} className="bg-slate-50 border border-slate-200 p-3 rounded-sm text-xs space-y-1">
                               <div className="flex justify-between items-start">
-                                <span className="font-semibold text-bone">{fb.name} <span className="text-[#556b82] font-normal">({fb.service})</span></span>
+                                <span className="font-semibold text-slate-800">{fb.name} <span className="text-slate-400 font-normal">({fb.service})</span></span>
                                 <span className="text-ember tracking-widest">{"★".repeat(fb.rating)}</span>
                               </div>
-                              <p className="text-[#aac7e8]">{fb.text}</p>
-                              <div className="text-[9px] text-[#556b82] text-right">{fb.time}</div>
+                              <p className="text-slate-600">{fb.text}</p>
+                              <div className="text-[9px] text-slate-400 text-right">{fb.time}</div>
                             </div>
                           ))
                         )}
