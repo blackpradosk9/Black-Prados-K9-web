@@ -5,16 +5,26 @@
   --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Anton", sans-serif;
 
-  --color-ink: #f5f7fa;
-  --color-ink-2: #ffffff;
-  --color-bone: #0f172a;
-  --color-ember: #b37e2d;
-  --color-moss: #eaeef2;
-  --color-steel: #475569;
-  --color-line: rgba(15, 23, 42, 0.1);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-bone: var(--bone);
+  --color-ember: var(--ember);
+  --color-moss: var(--moss);
+  --color-steel: var(--steel);
+  --color-line: var(--line);
 }
 
 :root {
+  --ink: #05080e;
+  --ink-2: #0b121f;
+  --bone: #f5f7fa;
+  --ember: #b37e2d;
+  --moss: #142035;
+  --steel: #94a3b8;
+  --line: rgba(245, 247, 250, 0.12);
+}
+
+html.light {
   --ink: #f5f7fa;
   --ink-2: #ffffff;
   --bone: #0f172a;
@@ -87,5 +97,26 @@ a {
 .editable-active {
   outline: 2px solid #c89a56 !important;
   background: rgba(200, 154, 86, 0.08);
+}
+
+/* Custom animation for background blobs */
+@keyframes blob-drift {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(40px, -60px) scale(1.12);
+  }
+  66% {
+    transform: translate(-30px, 30px) scale(0.92);
+  }
+}
+
+.animate-blob {
+  animation: blob-drift 22s infinite ease-in-out;
+}
+
+.animation-delay-2000 {
+  animation-delay: 3s;
 }
 

@@ -31,7 +31,9 @@ import {
   MessageSquare,
   MessageCircle,
   Send,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { Booking, Feedback, GalleryImage, SiteContent } from './types';
 import { defaultContent } from './data/defaultContent';
@@ -49,6 +51,13 @@ export default function App() {
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  // Theme & Non-Iframe Delete Confirmation States
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('k9_theme') as 'dark' | 'light') || 'dark';
+  });
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
+  const [publicDeletingImageId, setPublicDeletingImageId] = useState<string | null>(null);
 
   // WhatsApp / SMS Continuation Modal States
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
@@ -99,6 +108,7 @@ export default function App() {
   const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [galleryFileBase64, setGalleryFileBase64] = useState<string | null>(null);
   const [isGalleryProcessing, setIsGalleryProcessing] = useState<boolean>(false);
+  const [galleryError, setGalleryError] = useState<string>("");
   const [galleryUrlInput, setGalleryUrlInput] = useState('');
   const [galleryLabelInput, setGalleryLabelInput] = useState('');
   const [editingImageId, setEditingImageId] = useState<string | null>(null);
@@ -122,6 +132,17 @@ export default function App() {
   const EMAILJS_SERVICE_ID  = "service_6g6spms";
   const EMAILJS_TEMPLATE_ID = "template_9mos6fm";
   const OWNER_EMAIL = "blackpradosk9@gmail.com";
+
+  // Apply theme to document element
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'light') {
+      root.classList.add('light');
+    } else {
+      root.classList.remove('light');
+    }
+    localStorage.setItem('k9_theme', theme);
+  }, [theme]);
 
   // --- INITIAL DATA FETCHING ---
   useEffect(() => {
@@ -630,6 +651,7 @@ export default function App() {
   const handleAddGalleryImage = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsGalleryProcessing(true);
+    setGalleryError("");
 
     try {
       let finalUrl = "";
@@ -649,13 +671,13 @@ export default function App() {
         }
 
         if (!finalUrl) {
-          alert("Please upload a local image file or switch to Paste URL.");
+          setGalleryError("Please upload a local image file or switch to Paste URL.");
           setIsGalleryProcessing(false);
           return;
         }
       } else {
         if (!galleryUrlInput.trim()) {
-          alert("Please enter a valid image URL.");
+          setGalleryError("Please enter a valid image URL.");
           setIsGalleryProcessing(false);
           return;
         }
@@ -688,7 +710,7 @@ export default function App() {
       setGalleryFileBase64(null);
     } catch (err) {
       console.error("Error saving gallery image:", err);
-      alert("Failed to save image. Please check the file size and try again.");
+      setGalleryError("Failed to save image. Please check the file size and try again.");
     } finally {
       setIsGalleryProcessing(false);
     }
@@ -718,8 +740,6 @@ export default function App() {
   };
 
   const handleRemoveGalleryImage = async (id: string) => {
-    if (!confirm("Are you sure you want to remove this image from the gallery?")) return;
-
     try {
       await deleteDoc(doc(db, 'gallery', id));
       setGalleryImages((prev) => prev.filter((img) => img.id !== id));
@@ -732,8 +752,14 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen selection:bg-ember selection:text-ink">
+    <div className="min-h-screen selection:bg-ember selection:text-ink relative">
       
+      {/* Animated Background Blobs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[20%] left-[10%] w-[350px] md:w-[500px] h-[350px] md:h-[500px] rounded-full bg-ember/5 blur-[100px] md:blur-[130px] animate-blob" />
+        <div className="absolute bottom-[20%] right-[10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full bg-steel/5 blur-[120px] md:blur-[150px] animate-blob animation-delay-2000" />
+      </div>
+
       {/* HEADER / NAVIGATION */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-ink-2/90 backdrop-blur-md border-b border-line">
         <nav className="flex items-center justify-between max-w-7xl mx-auto px-6 md:px-12 py-4">
@@ -783,9 +809,20 @@ export default function App() {
             <a href="#contact" className="hover:text-bone transition-colors">Contact</a>
           </div>
 
-          <a href="#contact" className="bg-ember text-ink hover:translate-y-[-2px] transition-transform font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-sm">
-            Book a Stay
-          </a>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setTheme((prev) => prev === 'dark' ? 'light' : 'dark')}
+              className="text-bone hover:text-ember transition-colors p-2 rounded-full border border-line cursor-pointer flex items-center justify-center bg-ink-2/30"
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              aria-label="Toggle Theme"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
+            <a href="#contact" className="bg-ember text-ink hover:translate-y-[-2px] transition-transform font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-sm">
+              Book a Stay
+            </a>
+          </div>
         </nav>
       </header>
 
@@ -2060,6 +2097,70 @@ export default function App() {
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 pt-12">
                       <span className="text-xs font-bold uppercase tracking-wider text-bone relative z-10">{img.label}</span>
                     </div>
+
+                    {editMode && (
+                      <div className="absolute top-3 right-3 z-20 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleStartEditGalleryImage(img);
+                            // Scroll to admin dashboard
+                            const adminPanel = document.getElementById('admin-panel') || document.querySelector('.admin-section');
+                            if (adminPanel) adminPanel.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                          className="bg-zinc-900/80 hover:bg-ember border border-line text-bone p-2 rounded-full shadow-lg transition-all cursor-pointer"
+                          title="Edit Image"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setPublicDeletingImageId(img.id || null);
+                          }}
+                          className="bg-zinc-900/80 hover:bg-red-600 border border-line text-bone p-2 rounded-full shadow-lg transition-all cursor-pointer"
+                          title="Delete Image"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Public Delete Confirmation Overlay */}
+                    {publicDeletingImageId === img.id && (
+                      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-4 z-30 text-center gap-2 animate-fade-in">
+                        <span className="text-xs text-white font-bold uppercase tracking-wider">Confirm Delete Image?</span>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (img.id) handleRemoveGalleryImage(img.id);
+                              setPublicDeletingImageId(null);
+                            }}
+                            className="bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-3 py-1.5 rounded-sm uppercase tracking-wider cursor-pointer"
+                          >
+                            Yes, Delete
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setPublicDeletingImageId(null);
+                            }}
+                            className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs px-3 py-1.5 rounded-sm uppercase tracking-wider cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -2880,6 +2981,12 @@ export default function App() {
                           />
                         </div>
 
+                        {galleryError && (
+                          <div className="text-xs text-red-600 font-semibold bg-red-50 p-2 border border-red-200 rounded-sm">
+                            {galleryError}
+                          </div>
+                        )}
+
                         <div className="flex gap-2">
                           <button
                             type="submit"
@@ -2909,6 +3016,7 @@ export default function App() {
                               <span className="text-[9px] text-white font-bold uppercase line-clamp-2">{img.label}</span>
                             </div>
                             <button
+                              type="button"
                               onClick={() => handleStartEditGalleryImage(img)}
                               className={`absolute top-1 right-8 p-1 rounded-full border transition-all cursor-pointer z-10 ${
                                 editingImageId === img.id
@@ -2920,12 +3028,39 @@ export default function App() {
                               <Edit2 className="w-3 h-3" />
                             </button>
                             <button
-                              onClick={() => handleRemoveGalleryImage(img.id!)}
+                              type="button"
+                              onClick={() => setDeletingImageId(img.id || null)}
                               className="absolute top-1 right-1 bg-red-50/90 border border-red-200 text-red-600 p-1 rounded-full hover:bg-red-600 hover:text-white transition-all cursor-pointer z-10"
                               title="Delete Image"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>
+
+                            {/* Custom Confirmation Overlay for Admin Dashboard */}
+                            {deletingImageId === img.id && (
+                              <div className="absolute inset-0 bg-red-950/95 flex flex-col items-center justify-center p-2 z-20 text-center gap-1.5 animate-fade-in">
+                                <span className="text-[10px] text-white font-bold uppercase leading-tight">Delete?</span>
+                                <div className="flex gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (img.id) handleRemoveGalleryImage(img.id);
+                                      setDeletingImageId(null);
+                                    }}
+                                    className="bg-red-600 hover:bg-red-500 text-white font-bold text-[9px] px-2 py-0.5 rounded-sm uppercase cursor-pointer"
+                                  >
+                                    Yes
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setDeletingImageId(null)}
+                                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-[9px] px-2 py-0.5 rounded-sm uppercase cursor-pointer"
+                                  >
+                                    No
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
