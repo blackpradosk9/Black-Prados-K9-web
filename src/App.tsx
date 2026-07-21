@@ -84,6 +84,7 @@ export default function App() {
   // Gallery Manager Form
   const [galleryUrlInput, setGalleryUrlInput] = useState('');
   const [galleryLabelInput, setGalleryLabelInput] = useState('');
+  const [editingImageId, setEditingImageId] = useState<string | null>(null);
 
   // Logo fallback state
   const [logoLoaded, setLogoLoaded] = useState(true);
@@ -360,19 +361,43 @@ export default function App() {
       return;
     }
 
-    const newImage: GalleryImage = {
+    const imgData: GalleryImage = {
       url: galleryUrlInput.trim(),
       label: galleryLabelInput.trim() || 'Gallery'
     };
 
     try {
-      const docRef = await addDoc(collection(db, 'gallery'), newImage);
-      setGalleryImages((prev) => [...prev, { id: docRef.id, ...newImage }]);
+      if (editingImageId) {
+        // Update existing document
+        await updateDoc(doc(db, 'gallery', editingImageId), {
+          url: imgData.url,
+          label: imgData.label
+        });
+        setGalleryImages((prev) => prev.map((img) => img.id === editingImageId ? { ...img, ...imgData } : img));
+        setEditingImageId(null);
+      } else {
+        // Add new document
+        const docRef = await addDoc(collection(db, 'gallery'), imgData);
+        setGalleryImages((prev) => [...prev, { id: docRef.id, ...imgData }]);
+      }
       setGalleryUrlInput("");
       setGalleryLabelInput("");
     } catch (err) {
-      console.error("Error adding gallery image:", err);
+      console.error("Error saving gallery image:", err);
     }
+  };
+
+  const handleStartEditGalleryImage = (img: GalleryImage) => {
+    if (!img.id) return;
+    setEditingImageId(img.id);
+    setGalleryUrlInput(img.url);
+    setGalleryLabelInput(img.label);
+  };
+
+  const handleCancelEditGalleryImage = () => {
+    setEditingImageId(null);
+    setGalleryUrlInput("");
+    setGalleryLabelInput("");
   };
 
   const handleRemoveGalleryImage = async (id: string) => {
@@ -381,6 +406,9 @@ export default function App() {
     try {
       await deleteDoc(doc(db, 'gallery', id));
       setGalleryImages((prev) => prev.filter((img) => img.id !== id));
+      if (editingImageId === id) {
+        handleCancelEditGalleryImage();
+      }
     } catch (err) {
       console.error("Error removing gallery image:", err);
     }
@@ -2419,7 +2447,7 @@ export default function App() {
                     <div className="bg-[#0f1a2b] border border-[#1e3550] rounded-lg p-6">
                       <h3 className="font-display text-lg text-[#5b9bd5] mb-4 pb-2 border-b border-[#1a2d44] flex items-center gap-2">
                         <ImageIcon className="w-4 h-4" />
-                        <span>🖼️ Gallery Manager</span>
+                        <span>{editingImageId ? "📝 Edit Gallery Image" : "🖼️ Gallery Manager"}</span>
                       </h3>
                       <form onSubmit={handleAddGalleryImage} className="space-y-4 mb-6">
                         <div className="flex flex-col gap-1.5">
@@ -2443,9 +2471,20 @@ export default function App() {
                             className="bg-[#0d1a2b] border border-[#1e3550] text-[#d0e4f5] p-2.5 rounded-sm text-xs"
                           />
                         </div>
-                        <button type="submit" className="w-full bg-[#1e4b6e] hover:bg-[#2a6a94] text-white font-bold uppercase tracking-wider p-2.5 rounded-sm transition-all text-[11px] cursor-pointer">
-                          Add Image to Gallery
-                        </button>
+                        <div className="flex gap-2">
+                          <button type="submit" className="flex-grow bg-[#1e4b6e] hover:bg-[#2a6a94] text-white font-bold uppercase tracking-wider p-2.5 rounded-sm transition-all text-[11px] cursor-pointer">
+                            {editingImageId ? "Save Changes" : "Add Image to Gallery"}
+                          </button>
+                          {editingImageId && (
+                            <button
+                              type="button"
+                              onClick={handleCancelEditGalleryImage}
+                              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold uppercase tracking-wider p-2.5 rounded-sm transition-all text-[11px] cursor-pointer px-4"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
                       </form>
 
                       {/* Display Gallery Grid for Admin */}
@@ -2456,6 +2495,17 @@ export default function App() {
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 text-center">
                               <span className="text-[9px] text-[#aac7e8] font-bold uppercase line-clamp-2">{img.label}</span>
                             </div>
+                            <button
+                              onClick={() => handleStartEditGalleryImage(img)}
+                              className={`absolute top-1 right-8 p-1 rounded-full border transition-all cursor-pointer ${
+                                editingImageId === img.id
+                                  ? 'bg-amber-950/80 border-amber-900/50 text-amber-400'
+                                  : 'bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                              }`}
+                              title="Edit/Replace Image"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                            </button>
                             <button
                               onClick={() => handleRemoveGalleryImage(img.id!)}
                               className="absolute top-1 right-1 bg-red-950/80 border border-red-900/50 text-red-400 p-1 rounded-full hover:bg-red-800 hover:text-white transition-all cursor-pointer"
