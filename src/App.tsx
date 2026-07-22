@@ -35,7 +35,7 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
-import { Booking, Feedback, GalleryImage, SiteContent, CustomPanel } from './types';
+import { Booking, Feedback, GalleryImage, SiteContent, CustomPanel, CustomPanelItem } from './types';
 import { defaultContent } from './data/defaultContent';
 import { Editable } from './components/Editable';
 import { Taskbar } from './components/Taskbar';
@@ -364,6 +364,25 @@ export default function App() {
       await setDoc(contentDocRef, { customPanels: updatedPanels }, { merge: true });
     } catch (err) {
       console.error("Error deleting panel:", err);
+    }
+  };
+
+  const handleUpdatePanelItems = async (panelId: string, newItems: CustomPanelItem[]) => {
+    const updatedPanels = customPanels.map((p) => {
+      if (p.id === panelId) {
+        return { ...p, items: newItems };
+      }
+      return p;
+    });
+    const updatedContent = { ...siteContent, customPanels: updatedPanels };
+    setSiteContent(updatedContent);
+    pushToHistory(updatedContent);
+
+    try {
+      const contentDocRef = doc(db, 'content', 'main_page');
+      await setDoc(contentDocRef, { customPanels: updatedPanels }, { merge: true });
+    } catch (err) {
+      console.error("Error updating panel items:", err);
     }
   };
 
@@ -2629,6 +2648,7 @@ export default function App() {
         updateContent={updateContent}
         editMode={editMode}
         onDeletePanel={handleDeletePanel}
+        onUpdatePanelItems={handleUpdatePanelItems}
       />
 
       {/* --- CONTACT SECTION --- */}
