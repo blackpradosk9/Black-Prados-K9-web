@@ -33,7 +33,9 @@ import {
   Send,
   Image as ImageIcon,
   Sun,
-  Moon
+  Moon,
+  Instagram,
+  Facebook
 } from 'lucide-react';
 import { Booking, Feedback, GalleryImage, SiteContent, CustomPanel, CustomPanelItem } from './types';
 import { defaultContent } from './data/defaultContent';
@@ -282,6 +284,176 @@ export default function App() {
       } catch (e) {
         console.error('Error redoing content update:', e);
       }
+    }
+  };
+
+  // --- DEFAULT COLUMN CARDS DATA ---
+  const defaultBoardingCards = [
+    { id: '1', cmd: 'Standard Suite', title: 'The Den', desc: 'A private indoor-outdoor suite with raised bedding, three yard sessions, and twice-daily feeding to your schedule.', price: '₹700', unit: '/ night' },
+    { id: '2', cmd: 'Most Booked', title: 'The Pack Suite', desc: "Everything in The Den, plus supervised group play with dogs matched to your dog's energy and size.", price: '₹950', unit: '/ night' },
+    { id: '3', cmd: 'Extended Stay', title: 'The Homestead', desc: 'For stays over a week: a dedicated handler, one-on-one enrichment time, and a nightly video call if you want it.', price: '₹1,300', unit: '/ night' }
+  ];
+
+  const defaultGroomingCards = [
+    { id: '1', cmd: 'Quick Service', title: 'Wash & Go', desc: 'Bath with breed-appropriate shampoo, blow-dry, brush-out, ear cleaning, and nail trim.', price: '₹600', unit: '/ visit' },
+    { id: '2', cmd: 'Most Booked', title: 'Full Groom', desc: 'Everything in Wash & Go, plus a breed-standard or custom haircut and a light finishing spritz.', price: '₹1,200', unit: '/ visit' },
+    { id: '3', cmd: 'Deep Treatment', title: 'Spa Package', desc: 'Full groom plus deep-conditioning treatment, teeth brushing, and paw balm for cracked pads.', price: '₹1,800', unit: '/ visit' }
+  ];
+
+  const defaultDaycareCards = [
+    { id: '1', cmd: 'Half Day', title: '4-Hour Play', desc: 'Up to 4 hours of supervised yard play and rest — perfect for energy burning before night.', price: '₹350', unit: '/ visit' },
+    { id: '2', cmd: 'Most Booked', title: 'Full Day', desc: 'Drop off in the morning, pick up by close — group play, rest, and a midday enrichment activity.', price: '₹650', unit: '/ visit' },
+    { id: '3', cmd: 'Regulars', title: 'Weekly Pass', desc: 'Five full days, use them anytime in a rolling 30-day window. Ideal for work-week regulars.', price: '₹2,800', unit: '/ week' }
+  ];
+
+  const defaultTrainingRows = [
+    { id: '1', cmd: 'Puppy', title: 'Foundations', desc: 'Crate manners, name recognition, and the first commands — for pups 8 to 20 weeks.', level: 1 },
+    { id: '2', cmd: 'Obedience', title: 'House Manners', desc: 'Sit, stay, heel, and recall, reinforced on-leash and off, in the house and out in the yard.', level: 2 },
+    { id: '3', cmd: 'Behavior', title: 'Reactivity & Anxiety', desc: "One-on-one work for leash reactivity, separation anxiety, and resource guarding, at the dog's pace.", level: 3 },
+    { id: '4', cmd: 'Advanced', title: 'Off-Leash Reliability', desc: 'Distance commands, distraction-proofing, and real-world recall for dogs ready to go off-leash.', level: 4 }
+  ];
+
+  const boardingCards = siteContent.boardingCards || defaultBoardingCards;
+  const groomingCards = siteContent.groomingCards || defaultGroomingCards;
+  const daycareCards = siteContent.daycareCards || defaultDaycareCards;
+  const trainingRows = siteContent.trainingRows || defaultTrainingRows;
+
+  // Boarding card operations
+  const handleAddBoardingCard = async () => {
+    const newCard = {
+      id: Date.now().toString(),
+      cmd: 'New Suite',
+      title: `SUITE OPTION ${boardingCards.length + 1}`,
+      desc: 'Describe suite features, play sessions, and feeding options.',
+      price: '₹1,100',
+      unit: '/ night'
+    };
+    const updated = [...boardingCards, newCard];
+    const updatedContent = { ...siteContent, boardingCards: updated };
+    setSiteContent(updatedContent);
+    pushToHistory(updatedContent);
+    try {
+      const docRef = doc(db, 'content', 'main_page');
+      await setDoc(docRef, { boardingCards: updated }, { merge: true });
+    } catch (e) {
+      console.error('Error adding boarding card:', e);
+    }
+  };
+
+  const handleDeleteBoardingCard = async (indexToDelete: number) => {
+    const updated = boardingCards.filter((_: any, idx: number) => idx !== indexToDelete);
+    const updatedContent = { ...siteContent, boardingCards: updated };
+    setSiteContent(updatedContent);
+    pushToHistory(updatedContent);
+    try {
+      const docRef = doc(db, 'content', 'main_page');
+      await setDoc(docRef, { boardingCards: updated }, { merge: true });
+    } catch (e) {
+      console.error('Error deleting boarding card:', e);
+    }
+  };
+
+  // Grooming card operations
+  const handleAddGroomingCard = async () => {
+    const newCard = {
+      id: Date.now().toString(),
+      cmd: 'Special Care',
+      title: `GROOM PACKAGE ${groomingCards.length + 1}`,
+      desc: 'Bath, styling, nail clip, ear hygiene, and coat conditioning treatment.',
+      price: '₹1,500',
+      unit: '/ visit'
+    };
+    const updated = [...groomingCards, newCard];
+    const updatedContent = { ...siteContent, groomingCards: updated };
+    setSiteContent(updatedContent);
+    pushToHistory(updatedContent);
+    try {
+      const docRef = doc(db, 'content', 'main_page');
+      await setDoc(docRef, { groomingCards: updated }, { merge: true });
+    } catch (e) {
+      console.error('Error adding grooming card:', e);
+    }
+  };
+
+  const handleDeleteGroomingCard = async (indexToDelete: number) => {
+    const updated = groomingCards.filter((_: any, idx: number) => idx !== indexToDelete);
+    const updatedContent = { ...siteContent, groomingCards: updated };
+    setSiteContent(updatedContent);
+    pushToHistory(updatedContent);
+    try {
+      const docRef = doc(db, 'content', 'main_page');
+      await setDoc(docRef, { groomingCards: updated }, { merge: true });
+    } catch (e) {
+      console.error('Error deleting grooming card:', e);
+    }
+  };
+
+  // Daycare card operations
+  const handleAddDaycareCard = async () => {
+    const newCard = {
+      id: Date.now().toString(),
+      cmd: 'Custom Pass',
+      title: `DAYCARE PASS ${daycareCards.length + 1}`,
+      desc: 'Supervised play sessions, rest breaks, and social group interaction.',
+      price: '₹500',
+      unit: '/ visit'
+    };
+    const updated = [...daycareCards, newCard];
+    const updatedContent = { ...siteContent, daycareCards: updated };
+    setSiteContent(updatedContent);
+    pushToHistory(updatedContent);
+    try {
+      const docRef = doc(db, 'content', 'main_page');
+      await setDoc(docRef, { daycareCards: updated }, { merge: true });
+    } catch (e) {
+      console.error('Error adding daycare card:', e);
+    }
+  };
+
+  const handleDeleteDaycareCard = async (indexToDelete: number) => {
+    const updated = daycareCards.filter((_: any, idx: number) => idx !== indexToDelete);
+    const updatedContent = { ...siteContent, daycareCards: updated };
+    setSiteContent(updatedContent);
+    pushToHistory(updatedContent);
+    try {
+      const docRef = doc(db, 'content', 'main_page');
+      await setDoc(docRef, { daycareCards: updated }, { merge: true });
+    } catch (e) {
+      console.error('Error deleting daycare card:', e);
+    }
+  };
+
+  // Training row operations
+  const handleAddTrainingRow = async () => {
+    const newRow = {
+      id: Date.now().toString(),
+      cmd: 'Specialized',
+      title: `PROGRAM ${trainingRows.length + 1}`,
+      desc: 'Focused handler sessions, command reinforcement, and real-world reps.',
+      level: Math.min(trainingRows.length + 1, 4)
+    };
+    const updated = [...trainingRows, newRow];
+    const updatedContent = { ...siteContent, trainingRows: updated };
+    setSiteContent(updatedContent);
+    pushToHistory(updatedContent);
+    try {
+      const docRef = doc(db, 'content', 'main_page');
+      await setDoc(docRef, { trainingRows: updated }, { merge: true });
+    } catch (e) {
+      console.error('Error adding training row:', e);
+    }
+  };
+
+  const handleDeleteTrainingRow = async (indexToDelete: number) => {
+    const updated = trainingRows.filter((_: any, idx: number) => idx !== indexToDelete);
+    const updatedContent = { ...siteContent, trainingRows: updated };
+    setSiteContent(updatedContent);
+    pushToHistory(updatedContent);
+    try {
+      const docRef = doc(db, 'content', 'main_page');
+      await setDoc(docRef, { trainingRows: updated }, { merge: true });
+    } catch (e) {
+      console.error('Error deleting training row:', e);
     }
   };
 
@@ -969,7 +1141,29 @@ export default function App() {
             <a href="#contact" className="hover:text-bone transition-colors">Contact</a>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <a
+              href="https://www.instagram.com/blackprados.k9/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-bone hover:text-pink-500 transition-colors p-2 rounded-full border border-line cursor-pointer flex items-center justify-center bg-ink-2/30"
+              title="Follow Black Prados K9 on Instagram"
+              aria-label="Instagram Page"
+            >
+              <Instagram className="w-4 h-4" />
+            </a>
+
+            <a
+              href="https://www.facebook.com/people/Blackprados-k9/61591244380409/?ref=PROFILE_EDIT_xav_ig_profile_page_web#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-bone hover:text-blue-500 transition-colors p-2 rounded-full border border-line cursor-pointer flex items-center justify-center bg-ink-2/30"
+              title="Follow Black Prados K9 on Facebook"
+              aria-label="Facebook Page"
+            >
+              <Facebook className="w-4 h-4" />
+            </a>
+
             <button
               onClick={() => setTheme((prev) => prev === 'dark' ? 'light' : 'dark')}
               className="text-bone hover:text-ember transition-colors p-2 rounded-full border border-line cursor-pointer flex items-center justify-center bg-ink-2/30"
@@ -1318,14 +1512,25 @@ export default function App() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
             <div>
-              <div className="font-display text-xs tracking-widest text-ember border border-ember/30 rounded-full px-3 py-1 w-fit mb-4">
-                <Editable
-                  textKey="boarding_cmd"
-                  defaultText="Boarding"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
+              <div className="flex items-center gap-3 mb-4">
+                <div className="font-display text-xs tracking-widest text-ember border border-ember/30 rounded-full px-3 py-1 w-fit">
+                  <Editable
+                    textKey="boarding_cmd"
+                    defaultText="Boarding"
+                    siteContent={siteContent}
+                    updateContent={updateContent}
+                    editMode={editMode}
+                  />
+                </div>
+                {editMode && (
+                  <button
+                    onClick={handleAddBoardingCard}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Column</span>
+                  </button>
+                )}
               </div>
               <h2 className="text-4xl md:text-5xl font-display uppercase tracking-tight text-bone">
                 <Editable
@@ -1349,138 +1554,82 @@ export default function App() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-line border border-line">
-            {/* Boarding Card 1 */}
-            <div className="bg-ink hover:bg-ink-2 transition-colors p-10 flex flex-col justify-between h-full">
-              <div>
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit mb-8">
-                  <Editable
-                    textKey="board_card_cmd_1"
-                    defaultText="Standard Suite"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {boardingCards.map((card: any, index: number) => (
+              <div key={card.id || index} className="bg-ink hover:bg-ink-2 transition-colors p-8 flex flex-col justify-between h-full border border-line rounded-lg relative">
+                {editMode && (
+                  <div className="flex justify-between items-center mb-4 bg-red-950/90 p-2 rounded border border-red-800">
+                    <span className="text-[10px] font-mono text-red-200 uppercase font-bold">Column #{index + 1}</span>
+                    <button
+                      onClick={() => handleDeleteBoardingCard(index)}
+                      className="bg-red-600 hover:bg-red-500 text-white font-bold text-[10px] uppercase px-2.5 py-1 rounded flex items-center gap-1 cursor-pointer transition-colors shadow"
+                      title="Delete this column"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete Column
+                    </button>
+                  </div>
+                )}
+                <div>
+                  <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit mb-6">
+                    <Editable
+                      textKey={`board_card_cmd_${card.id || index}`}
+                      defaultText={card.cmd || "Standard Suite"}
+                      siteContent={siteContent}
+                      updateContent={updateContent}
+                      editMode={editMode}
+                    />
+                  </div>
+                  <h3 className="text-2xl font-display text-bone mb-4 uppercase">
+                    <Editable
+                      textKey={`board_card_title_${card.id || index}`}
+                      defaultText={card.title || "The Den"}
+                      siteContent={siteContent}
+                      updateContent={updateContent}
+                      editMode={editMode}
+                    />
+                  </h3>
+                  <div className="text-steel text-sm leading-relaxed mb-8">
+                    <Editable
+                      textKey={`board_card_desc_${card.id || index}`}
+                      defaultText={card.desc || "Suite details..."}
+                      siteContent={siteContent}
+                      updateContent={updateContent}
+                      editMode={editMode}
+                      as="p"
+                    />
+                  </div>
                 </div>
-                <h3 className="text-2xl font-display text-bone mb-4 uppercase">
+                <div className="font-display text-3xl text-bone flex items-baseline">
                   <Editable
-                    textKey="board_card_title_1"
-                    defaultText="The Den"
+                    textKey={`board_card_price_${card.id || index}`}
+                    defaultText={card.price || "₹700"}
                     siteContent={siteContent}
                     updateContent={updateContent}
                     editMode={editMode}
                   />
-                </h3>
-                <div className="text-steel text-sm leading-relaxed mb-8">
-                  <Editable
-                    textKey="board_card_desc_1"
-                    defaultText="A private indoor-outdoor suite with raised bedding, three yard sessions, and twice-daily feeding to your schedule."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
+                  <span className="font-sans text-xs tracking-wider font-bold text-steel uppercase ml-2">
+                    <Editable
+                      textKey={`board_card_unit_${card.id || index}`}
+                      defaultText={card.unit || "/ night"}
+                      siteContent={siteContent}
+                      updateContent={updateContent}
+                      editMode={editMode}
+                    />
+                  </span>
                 </div>
               </div>
-              <div className="font-display text-3xl text-bone">
-                <Editable
-                  textKey="board_card_price_1"
-                  defaultText="₹700"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
-                <span className="font-sans text-xs tracking-wider font-bold text-steel uppercase ml-2">/ night</span>
-              </div>
-            </div>
+            ))}
 
-            {/* Boarding Card 2 */}
-            <div className="bg-ink hover:bg-ink-2 transition-colors p-10 flex flex-col justify-between h-full border-t md:border-t-0 md:border-x border-line">
-              <div>
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit mb-8">
-                  <Editable
-                    textKey="board_card_cmd_2"
-                    defaultText="Most Booked"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </div>
-                <h3 className="text-2xl font-display text-bone mb-4 uppercase">
-                  <Editable
-                    textKey="board_card_title_2"
-                    defaultText="The Pack Suite"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </h3>
-                <div className="text-steel text-sm leading-relaxed mb-8">
-                  <Editable
-                    textKey="board_card_desc_2"
-                    defaultText="Everything in The Den, plus supervised group play with dogs matched to your dog's energy and size."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
-                </div>
-              </div>
-              <div className="font-display text-3xl text-bone">
-                <Editable
-                  textKey="board_card_price_2"
-                  defaultText="₹950"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
-                <span className="font-sans text-xs tracking-wider font-bold text-steel uppercase ml-2">/ night</span>
-              </div>
-            </div>
-
-            {/* Boarding Card 3 */}
-            <div className="bg-ink hover:bg-ink-2 transition-colors p-10 flex flex-col justify-between h-full">
-              <div>
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit mb-8">
-                  <Editable
-                    textKey="board_card_cmd_3"
-                    defaultText="Extended Stay"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </div>
-                <h3 className="text-2xl font-display text-bone mb-4 uppercase">
-                  <Editable
-                    textKey="board_card_title_3"
-                    defaultText="The Homestead"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </h3>
-                <div className="text-steel text-sm leading-relaxed mb-8">
-                  <Editable
-                    textKey="board_card_desc_3"
-                    defaultText="For stays over a week: a dedicated handler, one-on-one enrichment time, and a nightly video call if you want it."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
-                </div>
-              </div>
-              <div className="font-display text-3xl text-bone">
-                <Editable
-                  textKey="board_card_price_3"
-                  defaultText="₹1,300"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
-                <span className="font-sans text-xs tracking-wider font-bold text-steel uppercase ml-2">/ night</span>
-              </div>
-            </div>
+            {editMode && (
+              <button
+                onClick={handleAddBoardingCard}
+                className="bg-ink/40 hover:bg-amber-950/20 border-2 border-dashed border-amber-500/50 hover:border-amber-400 p-8 rounded-lg flex flex-col items-center justify-center space-y-2 text-amber-400 hover:text-amber-300 transition-all cursor-pointer min-h-[280px]"
+              >
+                <Plus className="w-8 h-8" />
+                <span className="text-xs font-bold uppercase tracking-wider">+ Add Boarding Column</span>
+              </button>
+            )}
           </div>
 
           {/* Quick tags */}
@@ -1506,14 +1655,25 @@ export default function App() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
             <div>
-              <div className="font-display text-xs tracking-widest text-ember border border-ember/30 rounded-full px-3 py-1 w-fit mb-4">
-                <Editable
-                  textKey="training_cmd"
-                  defaultText="Training"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
+              <div className="flex items-center gap-3 mb-4">
+                <div className="font-display text-xs tracking-widest text-ember border border-ember/30 rounded-full px-3 py-1 w-fit">
+                  <Editable
+                    textKey="training_cmd"
+                    defaultText="Training"
+                    siteContent={siteContent}
+                    updateContent={updateContent}
+                    editMode={editMode}
+                  />
+                </div>
+                {editMode && (
+                  <button
+                    onClick={handleAddTrainingRow}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Program</span>
+                  </button>
+                )}
               </div>
               <h2 className="text-4xl md:text-5xl font-display uppercase tracking-tight text-bone">
                 <Editable
@@ -1537,186 +1697,83 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex flex-col">
-            {/* Row 1 */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center py-8 border-t border-line">
-              <div className="md:col-span-2">
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit">
-                  <Editable
-                    textKey="train_row_cmd_1"
-                    defaultText="Puppy"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
+          <div className="flex flex-col space-y-4">
+            {trainingRows.map((row: any, index: number) => {
+              const level = row.level || Math.min(index + 1, 4);
+              return (
+                <div key={row.id || index} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center p-6 bg-ink/60 border border-line rounded-lg hover:border-ember/40 transition-colors relative">
+                  {editMode && (
+                    <div className="md:col-span-12 flex justify-between items-center mb-2 bg-red-950/80 p-2 rounded border border-red-800">
+                      <span className="text-[10px] font-mono text-red-200 uppercase font-bold">Program #{index + 1}</span>
+                      <button
+                        onClick={() => handleDeleteTrainingRow(index)}
+                        className="bg-red-600 hover:bg-red-500 text-white font-bold text-[10px] uppercase px-2 py-1 rounded flex items-center gap-1 cursor-pointer transition-colors shadow"
+                        title="Delete this training program"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Delete Program
+                      </button>
+                    </div>
+                  )}
+                  <div className="md:col-span-2">
+                    <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit">
+                      <Editable
+                        textKey={`train_row_cmd_${row.id || index}`}
+                        defaultText={row.cmd || "Program"}
+                        siteContent={siteContent}
+                        updateContent={updateContent}
+                        editMode={editMode}
+                      />
+                    </div>
+                  </div>
+                  <div className="md:col-span-3">
+                    <h3 className="text-2xl font-display text-bone uppercase">
+                      <Editable
+                        textKey={`train_row_title_${row.id || index}`}
+                        defaultText={row.title || "Program Title"}
+                        siteContent={siteContent}
+                        updateContent={updateContent}
+                        editMode={editMode}
+                      />
+                    </h3>
+                  </div>
+                  <div className="md:col-span-5">
+                    <div className="text-steel text-sm leading-relaxed">
+                      <Editable
+                        textKey={`train_row_desc_${row.id || index}`}
+                        defaultText={row.desc || "Program description..."}
+                        siteContent={siteContent}
+                        updateContent={updateContent}
+                        editMode={editMode}
+                        as="p"
+                      />
+                    </div>
+                  </div>
+                  <div className="md:col-span-2 justify-self-start md:justify-self-end flex gap-1.5">
+                    {[1, 2, 3, 4].map((lvl) => (
+                      <span
+                        key={lvl}
+                        className={`w-2.5 h-2.5 rounded-full ${lvl <= level ? 'bg-ember' : 'bg-line'}`}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="md:col-span-3">
-                <h3 className="text-2xl font-display text-bone uppercase">
-                  <Editable
-                    textKey="train_row_title_1"
-                    defaultText="Foundations"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </h3>
-              </div>
-              <div className="md:col-span-5">
-                <div className="text-steel text-sm leading-relaxed">
-                  <Editable
-                    textKey="train_row_desc_1"
-                    defaultText="Crate manners, name recognition, and the first commands — for pups 8 to 20 weeks."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
-                </div>
-              </div>
-              <div className="md:col-span-2 justify-self-start md:justify-self-end flex gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-line"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-line"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-line"></span>
-              </div>
-            </div>
+              );
+            })}
 
-            {/* Row 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center py-8 border-t border-line">
-              <div className="md:col-span-2">
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit">
-                  <Editable
-                    textKey="train_row_cmd_2"
-                    defaultText="Obedience"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </div>
-              </div>
-              <div className="md:col-span-3">
-                <h3 className="text-2xl font-display text-bone uppercase">
-                  <Editable
-                    textKey="train_row_title_2"
-                    defaultText="House Manners"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </h3>
-              </div>
-              <div className="md:col-span-5">
-                <div className="text-steel text-sm leading-relaxed">
-                  <Editable
-                    textKey="train_row_desc_2"
-                    defaultText="Sit, stay, heel, and recall, reinforced on-leash and off, in the house and out in the yard."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
-                </div>
-              </div>
-              <div className="md:col-span-2 justify-self-start md:justify-self-end flex gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-line"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-line"></span>
-              </div>
-            </div>
-
-            {/* Row 3 */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center py-8 border-t border-line">
-              <div className="md:col-span-2">
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit">
-                  <Editable
-                    textKey="train_row_cmd_3"
-                    defaultText="Behavior"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </div>
-              </div>
-              <div className="md:col-span-3">
-                <h3 className="text-2xl font-display text-bone uppercase">
-                  <Editable
-                    textKey="train_row_title_3"
-                    defaultText="Reactivity & Anxiety"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </h3>
-              </div>
-              <div className="md:col-span-5">
-                <div className="text-steel text-sm leading-relaxed">
-                  <Editable
-                    textKey="train_row_desc_3"
-                    defaultText="One-on-one work for leash reactivity, separation anxiety, and resource guarding, at the dog's pace."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
-                </div>
-              </div>
-              <div className="md:col-span-2 justify-self-start md:justify-self-end flex gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-line"></span>
-              </div>
-            </div>
-
-            {/* Row 4 */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center py-8 border-t border-b border-line mb-16">
-              <div className="md:col-span-2">
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit">
-                  <Editable
-                    textKey="train_row_cmd_4"
-                    defaultText="Advanced"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </div>
-              </div>
-              <div className="md:col-span-3">
-                <h3 className="text-2xl font-display text-bone uppercase">
-                  <Editable
-                    textKey="train_row_title_4"
-                    defaultText="Off-Leash Reliability"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </h3>
-              </div>
-              <div className="md:col-span-5">
-                <div className="text-steel text-sm leading-relaxed">
-                  <Editable
-                    textKey="train_row_desc_4"
-                    defaultText="Distance commands, distraction-proofing, and real-world recall for dogs ready to go off-leash."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
-                </div>
-              </div>
-              <div className="md:col-span-2 justify-self-start md:justify-self-end flex gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
-                <span className="w-2.5 h-2.5 rounded-full bg-ember"></span>
-              </div>
-            </div>
+            {editMode && (
+              <button
+                onClick={handleAddTrainingRow}
+                className="w-full py-4 border-2 border-dashed border-amber-500/50 hover:border-amber-400 text-amber-400 hover:text-amber-300 font-bold text-xs uppercase rounded-lg flex items-center justify-center gap-2 cursor-pointer transition-colors my-4"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Add Training Program</span>
+              </button>
+            )}
           </div>
 
           {/* Process steps */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-16">
             {[1, 2, 3, 4, 5].map((num) => (
               <div key={num} className="border-t-2 border-ember pt-4">
                 <span className="font-display text-xs text-ember tracking-wider block mb-2">
@@ -1758,14 +1815,25 @@ export default function App() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
             <div>
-              <div className="font-display text-xs tracking-widest text-ember border border-ember/30 rounded-full px-3 py-1 w-fit mb-4">
-                <Editable
-                  textKey="grooming_cmd"
-                  defaultText="Grooming"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
+              <div className="flex items-center gap-3 mb-4">
+                <div className="font-display text-xs tracking-widest text-ember border border-ember/30 rounded-full px-3 py-1 w-fit">
+                  <Editable
+                    textKey="grooming_cmd"
+                    defaultText="Grooming"
+                    siteContent={siteContent}
+                    updateContent={updateContent}
+                    editMode={editMode}
+                  />
+                </div>
+                {editMode && (
+                  <button
+                    onClick={handleAddGroomingCard}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Column</span>
+                  </button>
+                )}
               </div>
               <h2 className="text-4xl md:text-5xl font-display uppercase tracking-tight text-bone">
                 <Editable
@@ -1789,138 +1857,82 @@ export default function App() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-line border border-line">
-            {/* Card 1 */}
-            <div className="bg-ink hover:bg-ink-2 transition-colors p-10 flex flex-col justify-between h-full">
-              <div>
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit mb-8">
-                  <Editable
-                    textKey="groom_card_cmd_1"
-                    defaultText="Quick Service"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {groomingCards.map((card: any, index: number) => (
+              <div key={card.id || index} className="bg-ink hover:bg-ink-2 transition-colors p-8 flex flex-col justify-between h-full border border-line rounded-lg relative">
+                {editMode && (
+                  <div className="flex justify-between items-center mb-4 bg-red-950/90 p-2 rounded border border-red-800">
+                    <span className="text-[10px] font-mono text-red-200 uppercase font-bold">Column #{index + 1}</span>
+                    <button
+                      onClick={() => handleDeleteGroomingCard(index)}
+                      className="bg-red-600 hover:bg-red-500 text-white font-bold text-[10px] uppercase px-2.5 py-1 rounded flex items-center gap-1 cursor-pointer transition-colors shadow"
+                      title="Delete this column"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete Column
+                    </button>
+                  </div>
+                )}
+                <div>
+                  <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit mb-6">
+                    <Editable
+                      textKey={`groom_card_cmd_${card.id || index}`}
+                      defaultText={card.cmd || "Quick Service"}
+                      siteContent={siteContent}
+                      updateContent={updateContent}
+                      editMode={editMode}
+                    />
+                  </div>
+                  <h3 className="text-2xl font-display text-bone mb-4 uppercase">
+                    <Editable
+                      textKey={`groom_card_title_${card.id || index}`}
+                      defaultText={card.title || "Wash & Go"}
+                      siteContent={siteContent}
+                      updateContent={updateContent}
+                      editMode={editMode}
+                    />
+                  </h3>
+                  <div className="text-steel text-sm leading-relaxed mb-8">
+                    <Editable
+                      textKey={`groom_card_desc_${card.id || index}`}
+                      defaultText={card.desc || "Groom service description..."}
+                      siteContent={siteContent}
+                      updateContent={updateContent}
+                      editMode={editMode}
+                      as="p"
+                    />
+                  </div>
                 </div>
-                <h3 className="text-2xl font-display text-bone mb-4 uppercase">
+                <div className="font-display text-3xl text-bone flex items-baseline">
                   <Editable
-                    textKey="groom_card_title_1"
-                    defaultText="Wash & Go"
+                    textKey={`groom_card_price_${card.id || index}`}
+                    defaultText={card.price || "₹600"}
                     siteContent={siteContent}
                     updateContent={updateContent}
                     editMode={editMode}
                   />
-                </h3>
-                <div className="text-steel text-sm leading-relaxed mb-8">
-                  <Editable
-                    textKey="groom_card_desc_1"
-                    defaultText="Bath with breed-appropriate shampoo, blow-dry, brush-out, ear cleaning, and nail trim."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
+                  <span className="font-sans text-xs tracking-wider font-bold text-steel uppercase ml-2">
+                    <Editable
+                      textKey={`groom_card_unit_${card.id || index}`}
+                      defaultText={card.unit || "/ visit"}
+                      siteContent={siteContent}
+                      updateContent={updateContent}
+                      editMode={editMode}
+                    />
+                  </span>
                 </div>
               </div>
-              <div className="font-display text-3xl text-bone">
-                <Editable
-                  textKey="groom_card_price_1"
-                  defaultText="₹600"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
-                <span className="font-sans text-xs tracking-wider font-bold text-steel uppercase ml-2">/ visit</span>
-              </div>
-            </div>
+            ))}
 
-            {/* Card 2 */}
-            <div className="bg-ink hover:bg-ink-2 transition-colors p-10 flex flex-col justify-between h-full border-t md:border-t-0 md:border-x border-line">
-              <div>
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit mb-8">
-                  <Editable
-                    textKey="groom_card_cmd_2"
-                    defaultText="Most Booked"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </div>
-                <h3 className="text-2xl font-display text-bone mb-4 uppercase">
-                  <Editable
-                    textKey="groom_card_title_2"
-                    defaultText="Full Groom"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </h3>
-                <div className="text-steel text-sm leading-relaxed mb-8">
-                  <Editable
-                    textKey="groom_card_desc_2"
-                    defaultText="Everything in Wash & Go, plus a breed-standard or custom haircut and a light finishing spritz."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
-                </div>
-              </div>
-              <div className="font-display text-3xl text-bone">
-                <Editable
-                  textKey="groom_card_price_2"
-                  defaultText="₹1,200"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
-                <span className="font-sans text-xs tracking-wider font-bold text-steel uppercase ml-2">/ visit</span>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="bg-ink hover:bg-ink-2 transition-colors p-10 flex flex-col justify-between h-full">
-              <div>
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit mb-8">
-                  <Editable
-                    textKey="groom_card_cmd_3"
-                    defaultText="Deep Treatment"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </div>
-                <h3 className="text-2xl font-display text-bone mb-4 uppercase">
-                  <Editable
-                    textKey="groom_card_title_3"
-                    defaultText="Spa Package"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </h3>
-                <div className="text-steel text-sm leading-relaxed mb-8">
-                  <Editable
-                    textKey="groom_card_desc_3"
-                    defaultText="Full groom plus deep-conditioning treatment, teeth brushing, and paw balm for cracked pads."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
-                </div>
-              </div>
-              <div className="font-display text-3xl text-bone">
-                <Editable
-                  textKey="groom_card_price_3"
-                  defaultText="₹1,800"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
-                <span className="font-sans text-xs tracking-wider font-bold text-steel uppercase ml-2">/ visit</span>
-              </div>
-            </div>
+            {editMode && (
+              <button
+                onClick={handleAddGroomingCard}
+                className="bg-ink/40 hover:bg-amber-950/20 border-2 border-dashed border-amber-500/50 hover:border-amber-400 p-8 rounded-lg flex flex-col items-center justify-center space-y-2 text-amber-400 hover:text-amber-300 transition-all cursor-pointer min-h-[280px]"
+              >
+                <Plus className="w-8 h-8" />
+                <span className="text-xs font-bold uppercase tracking-wider">+ Add Grooming Column</span>
+              </button>
+            )}
           </div>
 
           {/* Process steps */}
@@ -1966,14 +1978,25 @@ export default function App() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
             <div>
-              <div className="font-display text-xs tracking-widest text-ember border border-ember/30 rounded-full px-3 py-1 w-fit mb-4">
-                <Editable
-                  textKey="daycare_cmd"
-                  defaultText="Day Care"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
+              <div className="flex items-center gap-3 mb-4">
+                <div className="font-display text-xs tracking-widest text-ember border border-ember/30 rounded-full px-3 py-1 w-fit">
+                  <Editable
+                    textKey="daycare_cmd"
+                    defaultText="Day Care"
+                    siteContent={siteContent}
+                    updateContent={updateContent}
+                    editMode={editMode}
+                  />
+                </div>
+                {editMode && (
+                  <button
+                    onClick={handleAddDaycareCard}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Column</span>
+                  </button>
+                )}
               </div>
               <h2 className="text-4xl md:text-5xl font-display uppercase tracking-tight text-bone">
                 <Editable
@@ -1997,138 +2020,82 @@ export default function App() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-line border border-line">
-            {/* Card 1 */}
-            <div className="bg-ink hover:bg-ink-2 transition-colors p-10 flex flex-col justify-between h-full">
-              <div>
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit mb-8">
-                  <Editable
-                    textKey="daycare_card_cmd_1"
-                    defaultText="Single Visit"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {daycareCards.map((card: any, index: number) => (
+              <div key={card.id || index} className="bg-ink hover:bg-ink-2 transition-colors p-8 flex flex-col justify-between h-full border border-line rounded-lg relative">
+                {editMode && (
+                  <div className="flex justify-between items-center mb-4 bg-red-950/90 p-2 rounded border border-red-800">
+                    <span className="text-[10px] font-mono text-red-200 uppercase font-bold">Column #{index + 1}</span>
+                    <button
+                      onClick={() => handleDeleteDaycareCard(index)}
+                      className="bg-red-600 hover:bg-red-500 text-white font-bold text-[10px] uppercase px-2.5 py-1 rounded flex items-center gap-1 cursor-pointer transition-colors shadow"
+                      title="Delete this column"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete Column
+                    </button>
+                  </div>
+                )}
+                <div>
+                  <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit mb-6">
+                    <Editable
+                      textKey={`daycare_card_cmd_${card.id || index}`}
+                      defaultText={card.cmd || "Single Visit"}
+                      siteContent={siteContent}
+                      updateContent={updateContent}
+                      editMode={editMode}
+                    />
+                  </div>
+                  <h3 className="text-2xl font-display text-bone mb-4 uppercase">
+                    <Editable
+                      textKey={`daycare_card_title_${card.id || index}`}
+                      defaultText={card.title || "Half Day"}
+                      siteContent={siteContent}
+                      updateContent={updateContent}
+                      editMode={editMode}
+                    />
+                  </h3>
+                  <div className="text-steel text-sm leading-relaxed mb-8">
+                    <Editable
+                      textKey={`daycare_card_desc_${card.id || index}`}
+                      defaultText={card.desc || "Daycare option details..."}
+                      siteContent={siteContent}
+                      updateContent={updateContent}
+                      editMode={editMode}
+                      as="p"
+                    />
+                  </div>
                 </div>
-                <h3 className="text-2xl font-display text-bone mb-4 uppercase">
+                <div className="font-display text-3xl text-bone flex items-baseline">
                   <Editable
-                    textKey="daycare_card_title_1"
-                    defaultText="Half Day"
+                    textKey={`daycare_card_price_${card.id || index}`}
+                    defaultText={card.price || "₹450"}
                     siteContent={siteContent}
                     updateContent={updateContent}
                     editMode={editMode}
                   />
-                </h3>
-                <div className="text-steel text-sm leading-relaxed mb-8">
-                  <Editable
-                    textKey="daycare_card_desc_1"
-                    defaultText="Up to 5 hours of supervised group play, rest breaks, and fresh water on demand."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
+                  <span className="font-sans text-xs tracking-wider font-bold text-steel uppercase ml-2">
+                    <Editable
+                      textKey={`daycare_card_unit_${card.id || index}`}
+                      defaultText={card.unit || "/ visit"}
+                      siteContent={siteContent}
+                      updateContent={updateContent}
+                      editMode={editMode}
+                    />
+                  </span>
                 </div>
               </div>
-              <div className="font-display text-3xl text-bone">
-                <Editable
-                  textKey="daycare_card_price_1"
-                  defaultText="₹450"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
-                <span className="font-sans text-xs tracking-wider font-bold text-steel uppercase ml-2">/ visit</span>
-              </div>
-            </div>
+            ))}
 
-            {/* Card 2 */}
-            <div className="bg-ink hover:bg-ink-2 transition-colors p-10 flex flex-col justify-between h-full border-t md:border-t-0 md:border-x border-line">
-              <div>
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit mb-8">
-                  <Editable
-                    textKey="daycare_card_cmd_2"
-                    defaultText="Most Booked"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </div>
-                <h3 className="text-2xl font-display text-bone mb-4 uppercase">
-                  <Editable
-                    textKey="daycare_card_title_2"
-                    defaultText="Full Day"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </h3>
-                <div className="text-steel text-sm leading-relaxed mb-8">
-                  <Editable
-                    textKey="daycare_card_desc_2"
-                    defaultText="Drop off in the morning, pick up by close — group play, rest, and a midday enrichment activity."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
-                </div>
-              </div>
-              <div className="font-display text-3xl text-bone">
-                <Editable
-                  textKey="daycare_card_price_2"
-                  defaultText="₹650"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
-                <span className="font-sans text-xs tracking-wider font-bold text-steel uppercase ml-2">/ visit</span>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="bg-ink hover:bg-ink-2 transition-colors p-10 flex flex-col justify-between h-full">
-              <div>
-                <div className="font-display text-xs tracking-wider text-ember border border-ember/30 rounded-full px-3 py-0.5 w-fit mb-8">
-                  <Editable
-                    textKey="daycare_card_cmd_3"
-                    defaultText="Regulars"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </div>
-                <h3 className="text-2xl font-display text-bone mb-4 uppercase">
-                  <Editable
-                    textKey="daycare_card_title_3"
-                    defaultText="Weekly Pass"
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                  />
-                </h3>
-                <div className="text-steel text-sm leading-relaxed mb-8">
-                  <Editable
-                    textKey="daycare_card_desc_3"
-                    defaultText="Five full days, use them anytime in a rolling 30-day window. Ideal for work-week regulars."
-                    siteContent={siteContent}
-                    updateContent={updateContent}
-                    editMode={editMode}
-                    as="p"
-                  />
-                </div>
-              </div>
-              <div className="font-display text-3xl text-bone">
-                <Editable
-                  textKey="daycare_card_price_3"
-                  defaultText="₹2,800"
-                  siteContent={siteContent}
-                  updateContent={updateContent}
-                  editMode={editMode}
-                />
-                <span className="font-sans text-xs tracking-wider font-bold text-steel uppercase ml-2">/ week</span>
-              </div>
-            </div>
+            {editMode && (
+              <button
+                onClick={handleAddDaycareCard}
+                className="bg-ink/40 hover:bg-amber-950/20 border-2 border-dashed border-amber-500/50 hover:border-amber-400 p-8 rounded-lg flex flex-col items-center justify-center space-y-2 text-amber-400 hover:text-amber-300 transition-all cursor-pointer min-h-[280px]"
+              >
+                <Plus className="w-8 h-8" />
+                <span className="text-xs font-bold uppercase tracking-wider">+ Add Daycare Column</span>
+              </button>
+            )}
           </div>
 
           {/* Schedule list */}
@@ -2791,6 +2758,32 @@ export default function App() {
                   />
                 </span>
               </div>
+
+              <div className="flex justify-between items-center py-4 text-sm">
+                <span className="text-steel font-semibold uppercase tracking-wider text-[11px]">
+                  Social Media
+                </span>
+                <div className="flex items-center gap-3">
+                  <a
+                    href="https://www.instagram.com/blackprados.k9/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:opacity-90 text-white font-bold text-[11px] uppercase tracking-wider px-3 py-1.5 rounded transition-all shadow"
+                  >
+                    <Instagram className="w-3.5 h-3.5" />
+                    <span>Instagram</span>
+                  </a>
+                  <a
+                    href="https://www.facebook.com/people/Blackprados-k9/61591244380409/?ref=PROFILE_EDIT_xav_ig_profile_page_web#"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] uppercase tracking-wider px-3 py-1.5 rounded transition-all shadow"
+                  >
+                    <Facebook className="w-3.5 h-3.5" />
+                    <span>Facebook</span>
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2889,93 +2882,133 @@ export default function App() {
 
       {/* --- FOOTER --- */}
       <footer className="border-t border-line py-16 px-6 md:px-12 bg-ink">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 text-sm">
-          {/* EXTREME BOTTOM K9 LOGO: CLICK TO ACCESS ADMIN PANEL */}
-          <div
-            onClick={() => setIsAdminOpen(true)}
-            className="flex items-center gap-4 cursor-pointer group"
-            title="Black Prados K9 · Click for Admin Panel Access"
-            role="button"
-            tabIndex={0}
-          >
-            {logoLoaded ? (
-              <img
-                src="logo.jpg"
-                alt="Black Prados K9 crest"
-                className="w-10 h-10 object-cover rounded-full border border-line group-hover:border-ember transition-all group-hover:scale-110 shadow-md"
-                onError={() => setLogoLoaded(false)}
-              />
-            ) : (
-              <div className="w-10 h-10 bg-ember text-ink flex items-center justify-center font-display rounded-full border border-line text-base font-bold group-hover:scale-110 transition-all shadow-md">
-                K9
+        <div className="max-w-7xl mx-auto flex flex-col gap-12 text-sm">
+          
+          {/* TOP FOOTER ROW: BRAND & SOCIAL CONNECT */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-8 border-b border-line">
+            {/* EXTREME BOTTOM K9 LOGO: CLICK TO ACCESS ADMIN PANEL */}
+            <div
+              onClick={() => setIsAdminOpen(true)}
+              className="flex items-center gap-4 cursor-pointer group"
+              title="Black Prados K9 · Click for Admin Panel Access"
+              role="button"
+              tabIndex={0}
+            >
+              {logoLoaded ? (
+                <img
+                  src="logo.jpg"
+                  alt="Black Prados K9 crest"
+                  className="w-12 h-12 object-cover rounded-full border border-line group-hover:border-ember transition-all group-hover:scale-110 shadow-md"
+                  onError={() => setLogoLoaded(false)}
+                />
+              ) : (
+                <div className="w-12 h-12 bg-ember text-ink flex items-center justify-center font-display rounded-full border border-line text-lg font-bold group-hover:scale-110 transition-all shadow-md">
+                  K9
+                </div>
+              )}
+              <div className="flex flex-col">
+                <span className="font-display text-lg uppercase tracking-widest text-bone group-hover:text-ember transition-colors">
+                  <Editable
+                    textKey="header_title"
+                    defaultText="Black Prados K9"
+                    siteContent={siteContent}
+                    updateContent={updateContent}
+                    editMode={editMode}
+                  />
+                </span>
+                <span className="text-xs text-steel font-medium">Follow our journey on social media</span>
               </div>
-            )}
-            <span className="font-display uppercase tracking-widest text-bone group-hover:text-ember transition-colors">
-              <Editable
-                textKey="header_title"
-                defaultText="Black Prados K9"
-                siteContent={siteContent}
-                updateContent={updateContent}
-                editMode={editMode}
-              />
-            </span>
+            </div>
+
+            {/* DIRECT SOCIAL MEDIA CONNECT BUTTONS */}
+            <div className="flex items-center gap-4 flex-wrap">
+              <a
+                href="https://www.instagram.com/blackprados.k9/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:scale-105 text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-md transition-all shadow-lg group"
+              >
+                <Instagram className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                <span>@blackprados.k9</span>
+              </a>
+
+              <a
+                href="https://www.facebook.com/people/Blackprados-k9/61591244380409/?ref=PROFILE_EDIT_xav_ig_profile_page_web#"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 bg-[#1877F2] hover:bg-[#166fe5] hover:scale-105 text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-md transition-all shadow-lg group"
+              >
+                <Facebook className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                <span>Facebook Page</span>
+              </a>
+            </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-6 text-xs text-steel uppercase font-semibold">
-            <a href="#boarding" className="hover:text-bone transition-colors">Boarding</a>
-            <a href="#training" className="hover:text-bone transition-colors">Training</a>
-            <a href="#grooming" className="hover:text-bone transition-colors">Grooming</a>
-            <a href="#daycare" className="hover:text-bone transition-colors">Day Care</a>
-            <a href="#about" className="hover:text-bone transition-colors">About</a>
-            <a href="#contact" className="hover:text-bone transition-colors">Contact</a>
-          </div>
+          {/* BOTTOM FOOTER ROW: NAV LINKS & COPYRIGHT */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-steel">
+            <div className="flex flex-wrap justify-center gap-6 uppercase font-semibold">
+              <a href="#boarding" className="hover:text-bone transition-colors">Boarding</a>
+              <a href="#training" className="hover:text-bone transition-colors">Training</a>
+              <a href="#grooming" className="hover:text-bone transition-colors">Grooming</a>
+              <a href="#daycare" className="hover:text-bone transition-colors">Day Care</a>
+              <a href="#gallery" className="hover:text-bone transition-colors">Gallery</a>
+              <a href="#about" className="hover:text-bone transition-colors">About</a>
+              <a href="#contact" className="hover:text-bone transition-colors">Contact</a>
+            </div>
 
-          <div className="text-xs text-steel font-medium">
-            <span>&copy; {new Date().getFullYear()} Black Prados K9. Built securely on Cloud Firestore.</span>
+            <div className="font-medium text-center md:text-right">
+              <span>&copy; {new Date().getFullYear()} Black Prados K9. All rights reserved.</span>
+            </div>
           </div>
         </div>
       </footer>
 
-      {/* --- ADMIN OVERLAY DIALOG --- */}
+      {/* --- ADMIN OVERLAY DIALOG (HACKER THEME) --- */}
       <AnimatePresence>
         {isAdminOpen && (
-          <div className="fixed inset-0 z-50 bg-slate-50/98 backdrop-blur-md overflow-y-auto p-6 md:p-12 flex flex-col text-slate-800">
+          <div className="fixed inset-0 z-50 bg-black/98 backdrop-blur-md overflow-y-auto p-4 sm:p-6 md:p-12 flex flex-col text-emerald-400 font-mono selection:bg-emerald-500 selection:text-black">
             <div className="max-w-7xl mx-auto w-full flex-grow flex flex-col">
               
               {/* Overlay Header */}
-              <div className="flex justify-between items-center border-b border-slate-200 pb-6 mb-8">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-emerald-800/80 pb-6 mb-8 gap-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">🛠</span>
-                  <h1 className="font-display text-2xl md:text-3xl tracking-wider text-slate-900">
-                    Black Prados K9 · Admin Dashboard
-                  </h1>
+                  <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
+                  <div className="flex flex-col">
+                    <h1 className="font-mono text-xl md:text-2xl font-bold tracking-wider text-emerald-400 flex items-center gap-2">
+                      <span>ROOT@BLACKPRADOS_K9:~#</span>
+                      <span className="text-emerald-300">ADMIN_PANEL</span>
+                    </h1>
+                    <span className="text-[10px] text-emerald-600 uppercase tracking-widest font-semibold">
+                      [STATUS: ENCRYPTED // LIVE FIRESTORE SESSION]
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   {isAdminLoggedIn && (
                     <button
                       onClick={handleToggleEditMode}
-                      className={`font-semibold text-xs uppercase tracking-wider px-5 py-2.5 rounded-md cursor-pointer transition-all ${
+                      className={`font-mono font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-md cursor-pointer transition-all shadow-md ${
                         editMode
-                          ? 'bg-red-800 hover:bg-red-700 text-white border border-red-700'
-                          : 'bg-[#1e4b6e] hover:bg-[#2a6a94] text-white border border-[#3a7aaa]'
+                          ? 'bg-red-950/90 hover:bg-red-900 text-red-400 border border-red-700 shadow-[0_0_10px_rgba(220,38,38,0.3)]'
+                          : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-[0_0_15px_rgba(16,185,129,0.3)]'
                       }`}
                     >
-                      {editMode ? "✕ Exit Edit Mode" : "✎ Edit Site Content"}
+                      {editMode ? "✕ EXIT_EDIT_MODE" : "✎ EDIT_SITE_CONTENT"}
                     </button>
                   )}
                   {isAdminLoggedIn && (
                     <button
                       onClick={handleAdminLogout}
-                      className="bg-transparent hover:bg-slate-200 border border-slate-300 text-slate-600 font-semibold text-xs uppercase tracking-wider px-5 py-2.5 rounded-md cursor-pointer transition-all"
+                      className="bg-zinc-900 hover:bg-emerald-950/80 border border-emerald-800 text-emerald-400 font-mono font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-md cursor-pointer transition-all"
                     >
-                      Log Out
+                      LOGOUT
                     </button>
                   )}
                   <button
                     onClick={() => setIsAdminOpen(false)}
-                    className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-md cursor-pointer transition-all"
+                    className="bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 font-mono font-bold text-xs uppercase tracking-wider px-4 py-2 rounded-md cursor-pointer transition-all shadow-md"
                   >
-                    Close Panel
+                    CLOSE [X]
                   </button>
                 </div>
               </div>
@@ -2983,40 +3016,58 @@ export default function App() {
               {/* Login State Gate */}
               {!isAdminLoggedIn ? (
                 <div className="flex-grow flex items-center justify-center py-12">
-                  <div className="bg-white border border-slate-200 rounded-lg p-8 md:p-10 w-full max-w-md shadow-xl">
-                    <h2 className="font-display text-2xl text-slate-900 text-center mb-6 uppercase tracking-wider">
-                      Admin Portal Login
-                    </h2>
+                  <div className="bg-zinc-950 border border-emerald-500/80 rounded-xl p-8 md:p-10 w-full max-w-md shadow-[0_0_30px_rgba(16,185,129,0.2)] font-mono relative overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600" />
+                    
+                    <div className="text-center mb-6">
+                      <div className="inline-block p-3 rounded-full bg-emerald-950 border border-emerald-700 mb-3 text-emerald-400">
+                        <Lock className="w-6 h-6 animate-pulse" />
+                      </div>
+                      <h2 className="font-mono text-xl text-emerald-400 font-bold uppercase tracking-wider">
+                        SYSTEM ACCESS // LOGIN
+                      </h2>
+                      <p className="text-[11px] text-emerald-600 mt-1">Authenticate credentials to gain full admin permissions</p>
+                    </div>
+
                     <form onSubmit={handleAdminLogin} className="space-y-4">
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">User ID</label>
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-500 flex justify-between">
+                          <span>SYS_USER_ID</span>
+                          <span className="text-emerald-700">[REQUIRED]</span>
+                        </label>
                         <input
                           value={adminUser}
                           onChange={(e) => setAdminUser(e.target.value)}
                           type="text"
                           required
-                          placeholder="Enter user ID"
-                          className="bg-slate-50 border border-slate-200 text-slate-800 focus:border-ember focus:outline-none p-3 rounded-sm text-sm"
+                          placeholder="Enter admin user ID"
+                          className="bg-black border border-emerald-800 text-emerald-300 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 focus:outline-none p-3 rounded-md text-sm font-mono placeholder:text-emerald-800"
                         />
                       </div>
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Password</label>
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-500 flex justify-between">
+                          <span>ACCESS_KEY</span>
+                          <span className="text-emerald-700">[ENCRYPTED]</span>
+                        </label>
                         <input
                           value={adminPass}
                           onChange={(e) => setAdminPass(e.target.value)}
                           type="password"
                           required
-                          placeholder="Enter password"
-                          className="bg-slate-50 border border-slate-200 text-slate-800 focus:border-ember focus:outline-none p-3 rounded-sm text-sm"
+                          placeholder="Enter secret password"
+                          className="bg-black border border-emerald-800 text-emerald-300 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 focus:outline-none p-3 rounded-md text-sm font-mono placeholder:text-emerald-800"
                         />
                       </div>
-                      <button type="submit" className="w-full bg-[#1e4b6e] hover:bg-[#2a6a94] text-white font-bold uppercase tracking-wider p-3.5 rounded-sm transition-all cursor-pointer text-xs mt-2">
-                        Login
+                      <button 
+                        type="submit" 
+                        className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold uppercase tracking-wider p-3.5 rounded-md transition-all cursor-pointer text-xs mt-2 font-mono shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                      >
+                        ⚡ AUTHENTICATE_USER
                       </button>
 
                       {loginError && (
-                        <div className="flex items-center gap-2 text-xs text-red-600 font-semibold mt-4 text-center justify-center bg-red-50 p-2 border border-red-200 rounded-sm">
-                          <ShieldAlert className="w-4 h-4 flex-shrink-0" />
+                        <div className="flex items-center gap-2 text-xs text-red-400 font-semibold mt-4 text-center justify-center bg-red-950/80 p-3 border border-red-800 rounded-md">
+                          <ShieldAlert className="w-4 h-4 flex-shrink-0 text-red-400" />
                           <span>{loginError}</span>
                         </div>
                       )}
@@ -3024,51 +3075,54 @@ export default function App() {
                   </div>
                 </div>
               ) : (
-                /* --- FULL ADMIN INTERFACE --- */
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-grow">
+                /* --- FULL ADMIN INTERFACE (HACKER THEME) --- */
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-grow font-mono">
                   
                   {/* Left Column: Gallery & System Config */}
                   <div className="lg:col-span-5 space-y-6">
                     {/* Gallery Manager */}
-                    <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-                      <h3 className="font-display text-lg text-slate-800 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                        <ImageIcon className="w-4 h-4 text-ember" />
-                        <span>{editingImageId ? "📝 Edit Gallery Image" : "🖼️ Gallery Manager"}</span>
+                    <div className="bg-zinc-950/90 border border-emerald-800/80 rounded-xl p-6 shadow-[0_0_20px_rgba(16,185,129,0.06)]">
+                      <h3 className="font-mono text-base text-emerald-400 mb-4 pb-2 border-b border-emerald-900/80 flex items-center justify-between font-bold uppercase tracking-wider">
+                        <span className="flex items-center gap-2">
+                          <ImageIcon className="w-4 h-4 text-emerald-400" />
+                          <span>{editingImageId ? "📝 EDIT_IMAGE" : "🖼️ GALLERY_MANAGER"}</span>
+                        </span>
+                        <span className="text-[10px] text-emerald-600">[{galleryImages.length} ITEMS]</span>
                       </h3>
                       <form onSubmit={handleAddGalleryImage} className="space-y-4 mb-6">
                         {/* Input Mode Selector */}
-                        <div className="flex gap-2 p-1 bg-slate-50 border border-slate-200 rounded-md mb-2">
+                        <div className="flex gap-2 p-1 bg-black border border-emerald-900 rounded-md mb-2">
                           <button
                             type="button"
                             onClick={() => setGalleryInputMode('file')}
-                            className={`flex-grow text-center py-1.5 px-3 rounded-sm text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                            className={`flex-grow text-center py-1.5 px-3 rounded text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                               galleryInputMode === 'file'
-                                ? 'bg-slate-800 text-white'
-                                : 'text-slate-500 hover:text-slate-800'
+                                ? 'bg-emerald-500 text-black font-bold shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                                : 'text-emerald-600 hover:text-emerald-400'
                             }`}
                           >
-                            📁 Local Image File
+                            📁 LOCAL_FILE
                           </button>
                           <button
                             type="button"
                             onClick={() => setGalleryInputMode('url')}
-                            className={`flex-grow text-center py-1.5 px-3 rounded-sm text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                            className={`flex-grow text-center py-1.5 px-3 rounded text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                               galleryInputMode === 'url'
-                                ? 'bg-slate-800 text-white'
-                                : 'text-slate-500 hover:text-slate-800'
+                                ? 'bg-emerald-500 text-black font-bold shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                                : 'text-emerald-600 hover:text-emerald-400'
                             }`}
                           >
-                            🔗 Paste URL
+                            🔗 URL_SOURCE
                           </button>
                         </div>
 
                         {galleryInputMode === 'file' ? (
                           <div className="space-y-3">
                             <div className="flex flex-col gap-1.5">
-                              <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
-                                Choose Image File
+                              <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-500">
+                                SELECT_IMAGE_FILE
                               </label>
-                              <div className="relative border border-dashed border-slate-300 hover:border-ember bg-slate-50 rounded-sm p-4 text-center cursor-pointer transition-colors group">
+                              <div className="relative border border-dashed border-emerald-800 hover:border-emerald-400 bg-black rounded-md p-4 text-center cursor-pointer transition-colors group">
                                 <input
                                   type="file"
                                   accept="image/*"
@@ -3088,27 +3142,27 @@ export default function App() {
                                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
                                 <div className="flex flex-col items-center justify-center gap-1">
-                                  <ImageIcon className="w-5 h-5 text-slate-400 group-hover:text-ember transition-colors" />
-                                  <span className="text-[11px] text-slate-600 font-medium truncate max-w-full px-2">
-                                    {galleryFile ? galleryFile.name : "Select or Drop Image"}
+                                  <ImageIcon className="w-5 h-5 text-emerald-600 group-hover:text-emerald-400 transition-colors" />
+                                  <span className="text-[11px] text-emerald-300 font-medium truncate max-w-full px-2">
+                                    {galleryFile ? galleryFile.name : "Choose File or Drag Here"}
                                   </span>
-                                  <span className="text-[8px] text-slate-400">
-                                    Supports PNG, JPG, WEBP, GIF
+                                  <span className="text-[8px] text-emerald-700">
+                                    PNG, JPG, WEBP, GIF
                                   </span>
                                 </div>
                               </div>
                             </div>
 
                             {galleryFileBase64 && (
-                              <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 p-2 rounded-sm">
+                              <div className="flex items-center gap-3 bg-black border border-emerald-800 p-2 rounded-md">
                                 <img
                                   src={galleryFileBase64}
                                   alt="Local upload preview"
-                                  className="w-10 h-10 rounded-sm object-cover border border-slate-200 bg-white"
+                                  className="w-10 h-10 rounded object-cover border border-emerald-700 bg-zinc-900"
                                 />
                                 <div className="flex-grow min-w-0">
-                                  <div className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Preview Loaded</div>
-                                  <div className="text-[9px] text-slate-500 truncate">
+                                  <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">PREVIEW_READY</div>
+                                  <div className="text-[9px] text-emerald-600 truncate">
                                     {galleryFile ? `${(galleryFile.size / 1024 / 1024).toFixed(2)} MB` : "Existing Image"}
                                   </div>
                                 </div>
@@ -3118,39 +3172,39 @@ export default function App() {
                                     setGalleryFile(null);
                                     setGalleryFileBase64(null);
                                   }}
-                                  className="text-xs text-red-500 hover:text-red-600 px-2 py-1 cursor-pointer"
+                                  className="text-xs text-red-400 hover:text-red-300 px-2 py-1 cursor-pointer font-bold"
                                 >
-                                  Clear
+                                  CLEAR
                                 </button>
                               </div>
                             )}
                           </div>
                         ) : (
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Image URL</label>
+                            <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-500">IMAGE_URL</label>
                             <input
                               value={galleryUrlInput}
                               onChange={(e) => setGalleryUrlInput(e.target.value)}
                               type="url"
                               placeholder="https://images.unsplash.com/photo-..."
-                              className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-ember focus:outline-none"
+                              className="bg-black border border-emerald-900 text-emerald-300 p-2.5 rounded-md text-xs focus:border-emerald-400 focus:outline-none placeholder:text-emerald-800"
                             />
                           </div>
                         )}
 
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Label / Category</label>
+                          <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-500">LABEL / TAG</label>
                           <input
                             value={galleryLabelInput}
                             onChange={(e) => setGalleryLabelInput(e.target.value)}
                             type="text"
                             placeholder="e.g. Play Yard, Training Session"
-                            className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-ember focus:outline-none"
+                            className="bg-black border border-emerald-900 text-emerald-300 p-2.5 rounded-md text-xs focus:border-emerald-400 focus:outline-none placeholder:text-emerald-800"
                           />
                         </div>
 
                         {galleryError && (
-                          <div className="text-xs text-red-600 font-semibold bg-red-50 p-2 border border-red-200 rounded-sm">
+                          <div className="text-xs text-red-400 font-semibold bg-red-950/80 p-2 border border-red-800 rounded-md">
                             {galleryError}
                           </div>
                         )}
@@ -3159,17 +3213,17 @@ export default function App() {
                           <button
                             type="submit"
                             disabled={isGalleryProcessing}
-                            className="flex-grow bg-slate-800 hover:bg-slate-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold uppercase tracking-wider p-2.5 rounded-sm transition-all text-[11px] cursor-pointer"
+                            className="flex-grow bg-emerald-500 hover:bg-emerald-400 text-black font-bold uppercase tracking-wider p-2.5 rounded-md transition-all text-xs cursor-pointer shadow-[0_0_12px_rgba(16,185,129,0.3)]"
                           >
-                            {isGalleryProcessing ? "Processing..." : (editingImageId ? "Save Changes" : "Add Image")}
+                            {isGalleryProcessing ? "UPLOADING..." : (editingImageId ? "SAVE_CHANGES" : "+ ADD_TO_GALLERY")}
                           </button>
                           {editingImageId && (
                             <button
                               type="button"
                               onClick={handleCancelEditGalleryImage}
-                              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold uppercase tracking-wider p-2.5 rounded-sm transition-all text-[11px] cursor-pointer px-4"
+                              className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold uppercase tracking-wider p-2.5 rounded-md transition-all text-xs cursor-pointer px-4 border border-zinc-700"
                             >
-                              Cancel
+                              CANCEL
                             </button>
                           )}
                         </div>
@@ -3178,27 +3232,27 @@ export default function App() {
                       {/* Display Gallery Grid for Admin */}
                       <div className="grid grid-cols-3 gap-2 max-h-[220px] overflow-y-auto pr-2">
                         {galleryImages.map((img) => (
-                          <div key={img.id} className="aspect-square relative rounded-md border border-slate-200 bg-slate-100 group overflow-hidden">
-                            <img src={img.url} alt={img.label} className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 text-center">
-                              <span className="text-[9px] text-white font-bold uppercase line-clamp-2">{img.label}</span>
+                          <div key={img.id} className="aspect-square relative rounded-md border border-emerald-900 bg-black group overflow-hidden">
+                            <img src={img.url} alt={img.label} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 text-center">
+                              <span className="text-[9px] text-emerald-300 font-bold uppercase line-clamp-2">{img.label}</span>
                             </div>
                             <button
                               type="button"
                               onClick={() => handleStartEditGalleryImage(img)}
                               className={`absolute top-1 right-8 p-1 rounded-full border transition-all cursor-pointer z-10 ${
                                 editingImageId === img.id
-                                  ? 'bg-amber-950/80 border-amber-900/50 text-amber-400'
-                                  : 'bg-white/90 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                                  ? 'bg-amber-950 border-amber-500 text-amber-400'
+                                  : 'bg-black/90 border-emerald-700 text-emerald-300 hover:bg-emerald-950'
                               }`}
-                              title="Edit/Replace Image"
+                              title="Edit Image"
                             >
                               <Edit2 className="w-3 h-3" />
                             </button>
                             <button
                               type="button"
                               onClick={() => setDeletingImageId(img.id || null)}
-                              className="absolute top-1 right-1 bg-red-50/90 border border-red-200 text-red-600 p-1 rounded-full hover:bg-red-600 hover:text-white transition-all cursor-pointer z-10"
+                              className="absolute top-1 right-1 bg-black/90 border border-red-700 text-red-400 p-1 rounded-full hover:bg-red-900 hover:text-white transition-all cursor-pointer z-10"
                               title="Delete Image"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -3207,7 +3261,7 @@ export default function App() {
                             {/* Custom Confirmation Overlay for Admin Dashboard */}
                             {deletingImageId === img.id && (
                               <div className="absolute inset-0 bg-red-950/95 flex flex-col items-center justify-center p-2 z-20 text-center gap-1.5 animate-fade-in">
-                                <span className="text-[10px] text-white font-bold uppercase leading-tight">Delete?</span>
+                                <span className="text-[10px] text-red-300 font-bold uppercase leading-tight">DELETE?</span>
                                 <div className="flex gap-1">
                                   <button
                                     type="button"
@@ -3217,14 +3271,14 @@ export default function App() {
                                     }}
                                     className="bg-red-600 hover:bg-red-500 text-white font-bold text-[9px] px-2 py-0.5 rounded-sm uppercase cursor-pointer"
                                   >
-                                    Yes
+                                    YES
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setDeletingImageId(null)}
                                     className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-[9px] px-2 py-0.5 rounded-sm uppercase cursor-pointer"
                                   >
-                                    No
+                                    NO
                                   </button>
                                 </div>
                               </div>
@@ -3232,22 +3286,22 @@ export default function App() {
                           </div>
                         ))}
                       </div>
-                      <p className="text-[10px] text-slate-400 mt-3">
-                        * Added images are stored globally in Firestore and render live in the public gallery!
+                      <p className="text-[10px] text-emerald-600 mt-3">
+                        * Synced with Firestore db — updates render live in public gallery.
                     </p>
                   </div>
 
                   {/* WhatsApp Notification Bot Config */}
-                  <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4 shadow-sm">
-                    <h3 className="font-display text-lg text-emerald-600 pb-2 border-b border-slate-100 flex items-center gap-2">
-                      <MessageCircle className="w-5 h-5 text-emerald-500" />
-                      <span>🤖 Automated WhatsApp Bot</span>
+                  <div className="bg-zinc-950/90 border border-emerald-800/80 rounded-xl p-6 space-y-4 shadow-[0_0_20px_rgba(16,185,129,0.06)]">
+                    <h3 className="font-mono text-base text-emerald-400 pb-2 border-b border-emerald-900/80 flex items-center gap-2 font-bold uppercase tracking-wider">
+                      <MessageCircle className="w-5 h-5 text-emerald-400" />
+                      <span>🤖 WHATSAPP_BOT_MODULE</span>
                     </h3>
                     
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                          Enable Bot Notifications
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                          ENABLE_BOT_DISPATCH
                         </label>
                         <input
                           type="checkbox"
@@ -3256,13 +3310,13 @@ export default function App() {
                             const val = e.target.checked ? "true" : "false";
                             await updateContent("whatsapp_bot_enabled", val);
                           }}
-                          className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                          className="w-4 h-4 accent-emerald-500 cursor-pointer"
                         />
                       </div>
 
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
-                          WhatsApp Phone (with Country Code)
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-500">
+                          TARGET_PHONE_NUMBER (COUNTRY CODE)
                         </label>
                         <input
                           value={siteContent.whatsapp_bot_phone || "919645051054"}
@@ -3271,16 +3325,16 @@ export default function App() {
                           }}
                           type="text"
                           placeholder="e.g. 919645051054"
-                          className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-emerald-500 focus:outline-none"
+                          className="bg-black border border-emerald-900 text-emerald-300 p-2.5 rounded-md text-xs focus:border-emerald-400 focus:outline-none placeholder:text-emerald-800"
                         />
-                        <p className="text-[9px] text-slate-400">
-                          Do not include symbols like + or -. (e.g., 919645051054)
+                        <p className="text-[9px] text-emerald-600">
+                          Format: No symbols. (e.g. 919645051054)
                         </p>
                       </div>
 
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
-                          CallMeBot API Key (FREE)
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-500">
+                          CALLMEBOT_API_KEY
                         </label>
                         <input
                           value={siteContent.whatsapp_bot_apikey || ""}
@@ -3288,72 +3342,104 @@ export default function App() {
                             await updateContent("whatsapp_bot_apikey", e.target.value.trim());
                           }}
                           type="password"
-                          placeholder="Enter CallMeBot API key"
-                          className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-emerald-500 focus:outline-none"
+                          placeholder="Enter CallMeBot API Key"
+                          className="bg-black border border-emerald-900 text-emerald-300 p-2.5 rounded-md text-xs focus:border-emerald-400 focus:outline-none placeholder:text-emerald-800"
                         />
                       </div>
 
-                      <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-sm space-y-2 text-[11px] text-slate-600">
-                        <p className="font-bold text-emerald-700 flex items-center gap-1.5">
-                          <span>💡</span> Setup FREE WhatsApp Bot in 15 seconds:
+                      <div className="bg-emerald-950/40 border border-emerald-800/80 p-3.5 rounded-md space-y-3 text-[11px] text-emerald-300">
+                        <p className="font-bold text-emerald-400 flex items-center gap-1.5 text-xs">
+                          <span>💡</span> WHY "INVITE TO WHATSAPP" HAPPENS & HOW TO FIX:
                         </p>
-                        <ol className="list-decimal list-inside space-y-1.5">
-                          <li>Add <span className="font-mono text-slate-900 font-semibold text-xs">+34 621 07 36 12</span> to your contacts under 'WhatsApp Bot'.</li>
-                          <li>Send a WhatsApp message: <span className="font-mono text-slate-900 font-semibold text-xs">I allow callmebot to send me messages</span></li>
-                          <li>Copy the API Key they reply with and paste it above!</li>
-                        </ol>
+                        <p className="text-[10px] text-emerald-300/90 leading-relaxed">
+                          When saving phone numbers manually in your phone contacts, WhatsApp sometimes shows "Invite to WhatsApp" due to country code formatting (+34 Spain) or unsynced contacts. <strong className="text-emerald-200">Bypass saving to contacts completely by clicking the direct links below!</strong>
+                        </p>
+
+                        <div className="space-y-2 pt-1 border-t border-emerald-900/60">
+                          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Option A: Click Direct WhatsApp Links (No contact saving needed)</span>
+                          <div className="flex flex-col gap-1.5">
+                            <a
+                              href="https://wa.me/34621073612?text=I%20allow%20callmebot%20to%20send%20me%20messages"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-between bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-[10px] px-3 py-1.5 rounded transition-all shadow"
+                            >
+                              <span>📱 Open WhatsApp Bot Chat (+34 621 07 36 12)</span>
+                              <span className="bg-black/20 text-black px-1.5 py-0.5 rounded text-[9px]">Click to Chat</span>
+                            </a>
+                            <a
+                              href="https://wa.me/34644519203?text=I%20allow%20callmebot%20to%20send%20me%20messages"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-between bg-zinc-900 hover:bg-emerald-950 text-emerald-300 border border-emerald-700/80 font-bold text-[10px] px-3 py-1.5 rounded transition-all"
+                            >
+                              <span>📱 Alternative Bot Link (+34 644 51 92 03)</span>
+                              <span className="text-emerald-500 text-[9px]">Backup Link</span>
+                            </a>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5 pt-2 border-t border-emerald-900/60 text-[10px]">
+                          <span className="font-bold text-emerald-400 uppercase tracking-wider block">Steps to complete:</span>
+                          <ol className="list-decimal list-inside space-y-1 text-emerald-300/90">
+                            <li>Click either link above to open WhatsApp directly with pre-filled text.</li>
+                            <li>Send the message: <span className="text-emerald-200 font-bold font-mono bg-black/50 px-1 py-0.5 rounded">I allow callmebot to send me messages</span></li>
+                            <li>CallMeBot will instantly reply with your <strong className="text-emerald-200">API Key</strong>.</li>
+                            <li>Copy that API Key and paste it into the <strong className="text-emerald-200">CALLMEBOT_API_KEY</strong> field above.</li>
+                          </ol>
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Change Admin Credentials Section */}
-                  <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4 shadow-sm">
-                    <h3 className="font-display text-lg text-amber-600 pb-2 border-b border-slate-100 flex items-center gap-2">
-                      <Lock className="w-4 h-4 text-amber-500" />
-                      <span>🔑 Change Admin Credentials</span>
+                  <div className="bg-zinc-950/90 border border-emerald-800/80 rounded-xl p-6 space-y-4 shadow-[0_0_20px_rgba(16,185,129,0.06)]">
+                    <h3 className="font-mono text-base text-emerald-400 pb-2 border-b border-emerald-900/80 flex items-center gap-2 font-bold uppercase tracking-wider">
+                      <Lock className="w-4 h-4 text-emerald-400" />
+                      <span>🔑 CREDENTIAL_SETTINGS</span>
                     </h3>
 
                     <div className="space-y-4 text-xs">
-                      <div className="bg-amber-50 border border-amber-200 p-3 rounded-sm text-amber-800 text-[11px] leading-relaxed">
-                        To update credentials, enter your new username, new password, and current password. Then click <strong>Send OTP</strong>.
+                      <div className="bg-emerald-950/30 border border-emerald-800/80 p-3 rounded-md text-emerald-300 text-[11px] leading-relaxed">
+                        Update username/password by requesting a 6-digit OTP code sent to <strong>blackpradosk9@gmail.com</strong>.
                       </div>
 
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
-                          New Username / User ID
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-500">
+                          NEW_USER_ID
                         </label>
                         <input
                           value={newAdminUser}
                           onChange={(e) => setNewAdminUser(e.target.value)}
                           type="text"
                           placeholder="e.g. AdminK9"
-                          className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-amber-500 focus:outline-none"
+                          className="bg-black border border-emerald-900 text-emerald-300 p-2.5 rounded-md text-xs focus:border-emerald-400 focus:outline-none placeholder:text-emerald-800"
                         />
                       </div>
 
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
-                          New Password
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-500">
+                          NEW_ACCESS_KEY
                         </label>
                         <input
                           value={newAdminPass}
                           onChange={(e) => setNewAdminPass(e.target.value)}
                           type="password"
-                          placeholder="Enter new secure password"
-                          className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-amber-500 focus:outline-none"
+                          placeholder="Enter new password"
+                          className="bg-black border border-emerald-900 text-emerald-300 p-2.5 rounded-md text-xs focus:border-emerald-400 focus:outline-none placeholder:text-emerald-800"
                         />
                       </div>
 
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
-                          Current Password (Verification)
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-500">
+                          CURRENT_ACCESS_KEY (VERIFICATION)
                         </label>
                         <input
                           value={currentAdminPassVerify}
                           onChange={(e) => setCurrentAdminPassVerify(e.target.value)}
                           type="password"
-                          placeholder="Enter your current password"
-                          className="bg-slate-50 border border-slate-200 text-slate-800 p-2.5 rounded-sm text-xs focus:border-amber-500 focus:outline-none"
+                          placeholder="Enter current password"
+                          className="bg-black border border-emerald-900 text-emerald-300 p-2.5 rounded-md text-xs focus:border-emerald-400 focus:outline-none placeholder:text-emerald-800"
                         />
                       </div>
 
@@ -3362,17 +3448,17 @@ export default function App() {
                           type="button"
                           onClick={handleSendOtp}
                           disabled={otpSent && otpTimer > 0}
-                          className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold uppercase tracking-wider text-xs p-3 rounded-sm transition-all cursor-pointer text-center"
+                          className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-900 disabled:text-emerald-800 text-black font-bold uppercase tracking-wider text-xs p-3 rounded-md transition-all cursor-pointer text-center font-mono shadow-[0_0_12px_rgba(16,185,129,0.25)]"
                         >
-                          {otpSent && otpTimer > 0 ? `OTP Sent (${otpTimer}s)` : "📩 Send OTP to blackpradosk9@gmail.com"}
+                          {otpSent && otpTimer > 0 ? `OTP SENT (${otpTimer}s)` : "📩 SEND_OTP_TO_EMAIL"}
                         </button>
                       </div>
 
                       {otpSent && (
-                        <div className="border border-emerald-200 bg-emerald-50 p-3.5 rounded-sm space-y-3">
+                        <div className="border border-emerald-600 bg-emerald-950/60 p-3.5 rounded-md space-y-3">
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-700">
-                              Enter 6-Digit OTP Code
+                            <label className="text-[10px] uppercase font-bold tracking-wider text-emerald-400">
+                              ENTER_6_DIGIT_OTP
                             </label>
                             <input
                               value={enteredOtp}
@@ -3380,22 +3466,22 @@ export default function App() {
                               type="text"
                               maxLength={6}
                               placeholder="e.g. 123456"
-                              className="bg-white border border-emerald-300 text-slate-800 p-2.5 rounded-sm text-xs font-mono text-center tracking-widest focus:border-emerald-500 focus:outline-none"
+                              className="bg-black border border-emerald-400 text-emerald-300 p-2.5 rounded-md text-sm font-mono text-center tracking-widest focus:border-emerald-300 focus:outline-none"
                             />
                           </div>
 
                           <button
                             type="button"
                             onClick={handleVerifyAndSaveCreds}
-                            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wider text-xs p-2.5 rounded-sm transition-all cursor-pointer text-center"
+                            className="w-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold uppercase tracking-wider text-xs p-2.5 rounded-md transition-all cursor-pointer text-center font-mono"
                           >
-                            ✓ Verify & Save New Credentials
+                            ✓ VERIFY_AND_UPDATE
                           </button>
                         </div>
                       )}
 
                       {credMessage && (
-                        <div className="text-xs font-semibold p-2.5 rounded-sm text-center bg-slate-50 border border-slate-200 text-amber-700">
+                        <div className="text-xs font-semibold p-2.5 rounded-md text-center bg-black border border-emerald-800 text-emerald-400">
                           {credMessage}
                         </div>
                       )}
@@ -3403,19 +3489,22 @@ export default function App() {
                   </div>
 
                   {/* Quick System Info */}
-                    <div className="bg-white border border-slate-200 rounded-lg p-6 text-xs text-slate-600 space-y-2 shadow-sm">
-                      <div className="font-bold text-sm text-slate-800 mb-2">💾 Database Status</div>
-                      <div className="flex justify-between">
-                        <span>Connected Database ID:</span>
-                        <span className="font-mono text-slate-500">ai-studio-79871270...</span>
+                    <div className="bg-black border border-emerald-900 rounded-xl p-6 text-xs text-emerald-400 space-y-2 shadow-sm">
+                      <div className="font-bold text-sm text-emerald-300 mb-2 flex items-center justify-between">
+                        <span>💾 DATABASE_STATUS</span>
+                        <span className="text-[9px] bg-emerald-950 border border-emerald-800 text-emerald-400 px-2 py-0.5 rounded">CONNECTED</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Database System:</span>
-                        <span className="text-emerald-600 font-semibold">● Live Cloud Firestore</span>
+                        <span className="text-emerald-600">PROJECT_ID:</span>
+                        <span className="font-mono text-emerald-300">ai-studio-79871270...</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Global Access Level:</span>
-                        <span className="text-slate-500">Standard Static Admin (All Internet)</span>
+                        <span className="text-emerald-600">ENGINE:</span>
+                        <span className="text-emerald-400 font-bold">● CLOUD_FIRESTORE</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-emerald-600">ACCESS_LEVEL:</span>
+                        <span className="text-emerald-300">ADMIN_ROOT_ENCRYPTED</span>
                       </div>
                     </div>
                   </div>
@@ -3423,60 +3512,63 @@ export default function App() {
                   {/* Right Column: Bookings & User Feedback */}
                   <div className="lg:col-span-7 space-y-6">
                     {/* Booking Requests */}
-                    <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-                      <h3 className="font-display text-lg text-slate-800 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-slate-600" />
-                        <span>📋 Booking & Meet-and-Greet Requests</span>
+                    <div className="bg-zinc-950/90 border border-emerald-800/80 rounded-xl p-6 shadow-[0_0_20px_rgba(16,185,129,0.06)]">
+                      <h3 className="font-mono text-base text-emerald-400 mb-4 pb-2 border-b border-emerald-900/80 flex items-center justify-between font-bold uppercase tracking-wider">
+                        <span className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-emerald-400" />
+                          <span>📋 BOOKING_REQUESTS</span>
+                        </span>
+                        <span className="text-[10px] text-emerald-600">[{bookings.length} TOTAL]</span>
                       </h3>
-                      <div className="max-h-[300px] overflow-y-auto pr-2 space-y-3">
+                      <div className="max-h-[320px] overflow-y-auto pr-2 space-y-3">
                         {bookings.length === 0 ? (
-                          <div className="text-slate-400 text-xs py-12 text-center">
-                            No booking requests received yet.
+                          <div className="text-emerald-700 text-xs py-12 text-center font-mono">
+                            // NO_BOOKING_REQUESTS_FOUND
                           </div>
                         ) : (
                           bookings.map((bk) => (
-                            <div key={bk.id} className="bg-slate-50 border border-slate-200 p-4 rounded-sm text-xs space-y-2 relative">
-                              <span className={`absolute top-3 right-3 text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                                bk.source === 'modal' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
+                            <div key={bk.id} className="bg-black/90 border border-emerald-900 p-4 rounded-md text-xs space-y-2 relative">
+                              <span className={`absolute top-3 right-3 text-[9px] font-bold px-2 py-0.5 rounded border uppercase ${
+                                bk.source === 'modal' ? 'bg-emerald-950 text-emerald-400 border-emerald-700' : 'bg-zinc-900 text-emerald-300 border-zinc-700'
                               }`}>
-                                {bk.source === 'modal' ? 'Intake' : 'Contact'}
+                                {bk.source === 'modal' ? 'INTAKE' : 'CONTACT'}
                               </span>
 
                               <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Owner</span>
-                                  <span className="text-slate-800 font-semibold text-sm">{bk.name}</span>
+                                  <span className="text-emerald-600 block text-[10px] uppercase font-bold">OWNER</span>
+                                  <span className="text-emerald-300 font-bold text-sm">{bk.name}</span>
                                 </div>
                                 <div>
-                                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Phone</span>
-                                  <span className="text-slate-600 font-mono">{bk.phone}</span>
+                                  <span className="text-emerald-600 block text-[10px] uppercase font-bold">PHONE</span>
+                                  <span className="text-emerald-400 font-mono">{bk.phone}</span>
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-3 gap-2 border-t border-slate-200 pt-2">
+                              <div className="grid grid-cols-3 gap-2 border-t border-emerald-900/80 pt-2">
                                 <div>
-                                  <span className="text-slate-400 block text-[9px] uppercase font-bold">Dog Name</span>
-                                  <span className="text-slate-700 font-medium">{bk.dogName}</span>
+                                  <span className="text-emerald-600 block text-[9px] uppercase font-bold">DOG_NAME</span>
+                                  <span className="text-emerald-300 font-medium">{bk.dogName}</span>
                                 </div>
                                 <div>
-                                  <span className="text-slate-400 block text-[9px] uppercase font-bold">Service</span>
-                                  <span className="text-ember font-medium uppercase">{bk.service}</span>
+                                  <span className="text-emerald-600 block text-[9px] uppercase font-bold">SERVICE</span>
+                                  <span className="text-emerald-400 font-bold uppercase">{bk.service}</span>
                                 </div>
                                 <div>
-                                  <span className="text-slate-400 block text-[9px] uppercase font-bold">Location</span>
-                                  <span className="text-slate-600 truncate" title={bk.location}>{bk.location}</span>
+                                  <span className="text-emerald-600 block text-[9px] uppercase font-bold">LOCATION</span>
+                                  <span className="text-emerald-400 truncate block" title={bk.location}>{bk.location}</span>
                                 </div>
                               </div>
 
                               {bk.message && bk.message !== "-" && (
-                                <div className="bg-white p-2 rounded-sm text-slate-600 border-l border-ember mt-2">
-                                  <span className="text-slate-400 block text-[9px] uppercase font-bold mb-0.5">Details / Notes</span>
+                                <div className="bg-emerald-950/40 p-2 rounded text-emerald-300 border-l-2 border-emerald-500 mt-2">
+                                  <span className="text-emerald-500 block text-[9px] uppercase font-bold mb-0.5">NOTES</span>
                                   {bk.message}
                                 </div>
                               )}
 
-                              <div className="text-[10px] text-slate-400 flex justify-between items-center pt-1">
-                                <span>Received: {bk.time}</span>
+                              <div className="text-[10px] text-emerald-700 flex justify-between items-center pt-1">
+                                <span>TIMESTAMP: {bk.time}</span>
                               </div>
                             </div>
                           ))
@@ -3485,25 +3577,28 @@ export default function App() {
                     </div>
 
                     {/* Feedback Admin List */}
-                    <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-                      <h3 className="font-display text-lg text-slate-800 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                        <MessageSquare className="w-4 h-4 text-slate-600" />
-                        <span>💬 Feedback Messages</span>
+                    <div className="bg-zinc-950/90 border border-emerald-800/80 rounded-xl p-6 shadow-[0_0_20px_rgba(16,185,129,0.06)]">
+                      <h3 className="font-mono text-base text-emerald-400 mb-4 pb-2 border-b border-emerald-900/80 flex items-center justify-between font-bold uppercase tracking-wider">
+                        <span className="flex items-center gap-2">
+                          <MessageSquare className="w-4 h-4 text-emerald-400" />
+                          <span>💬 CLIENT_FEEDBACK</span>
+                        </span>
+                        <span className="text-[10px] text-emerald-600">[{feedbackList.length} REVIEWS]</span>
                       </h3>
-                      <div className="max-h-[220px] overflow-y-auto pr-2 space-y-3">
+                      <div className="max-h-[240px] overflow-y-auto pr-2 space-y-3">
                         {feedbackList.length === 0 ? (
-                          <div className="text-slate-400 text-xs py-6 text-center">
-                            No custom user feedback received yet.
+                          <div className="text-emerald-700 text-xs py-6 text-center font-mono">
+                            // NO_FEEDBACK_MESSAGES_RECEIVED
                           </div>
                         ) : (
                           feedbackList.map((fb) => (
-                            <div key={fb.id} className="bg-slate-50 border border-slate-200 p-3 rounded-sm text-xs space-y-1">
+                            <div key={fb.id} className="bg-black/90 border border-emerald-900 p-3 rounded-md text-xs space-y-1">
                               <div className="flex justify-between items-start">
-                                <span className="font-semibold text-slate-800">{fb.name} <span className="text-slate-400 font-normal">({fb.service})</span></span>
-                                <span className="text-ember tracking-widest">{"★".repeat(fb.rating)}</span>
+                                <span className="font-semibold text-emerald-300">{fb.name} <span className="text-emerald-600 font-normal">({fb.service})</span></span>
+                                <span className="text-emerald-400 tracking-widest">{"★".repeat(fb.rating)}</span>
                               </div>
-                              <p className="text-slate-600">{fb.text}</p>
-                              <div className="text-[9px] text-slate-400 text-right">{fb.time}</div>
+                              <p className="text-emerald-400/90">{fb.text}</p>
+                              <div className="text-[9px] text-emerald-700 text-right">{fb.time}</div>
                             </div>
                           ))
                         )}
