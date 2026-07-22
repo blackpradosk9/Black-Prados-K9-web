@@ -35,9 +35,11 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
-import { Booking, Feedback, GalleryImage, SiteContent } from './types';
+import { Booking, Feedback, GalleryImage, SiteContent, CustomPanel } from './types';
 import { defaultContent } from './data/defaultContent';
 import { Editable } from './components/Editable';
+import { Taskbar } from './components/Taskbar';
+import { CustomPanelsSection } from './components/CustomPanels';
 
 export default function App() {
   // --- STATE ---
@@ -241,15 +243,140 @@ export default function App() {
     }
   }, [otpSent, otpTimer]);
 
+  // --- UNDO / REDO HISTORY STACK ---
+  const [historyStack, setHistoryStack] = useState<SiteContent[]>([defaultContent]);
+  const [historyIndex, setHistoryIndex] = useState<number>(0);
+
+  const pushToHistory = (newContent: SiteContent) => {
+    setHistoryStack((prev) => {
+      const sliced = prev.slice(0, historyIndex + 1);
+      return [...sliced, newContent];
+    });
+    setHistoryIndex((prev) => prev + 1);
+  };
+
+  const handleUndo = async () => {
+    if (historyIndex > 0) {
+      const prevIndex = historyIndex - 1;
+      const prevState = historyStack[prevIndex];
+      setHistoryIndex(prevIndex);
+      setSiteContent(prevState);
+      try {
+        const contentDocRef = doc(db, 'content', 'main_page');
+        await setDoc(contentDocRef, prevState, { merge: true });
+      } catch (e) {
+        console.error('Error undoing content update:', e);
+      }
+    }
+  };
+
+  const handleRedo = async () => {
+    if (historyIndex < historyStack.length - 1) {
+      const nextIndex = historyIndex + 1;
+      const nextState = historyStack[nextIndex];
+      setHistoryIndex(nextIndex);
+      setSiteContent(nextState);
+      try {
+        const contentDocRef = doc(db, 'content', 'main_page');
+        await setDoc(contentDocRef, nextState, { merge: true });
+      } catch (e) {
+        console.error('Error redoing content update:', e);
+      }
+    }
+  };
+
+  // --- CUSTOM PANELS OPERATIONS ---
+  const customPanels: CustomPanel[] = siteContent.customPanels || [];
+
+  const handleAddPanel = async (type: CustomPanel['type']) => {
+    const newId = Date.now().toString();
+    let newPanel: CustomPanel;
+
+    if (type === 'banner') {
+      newPanel = {
+        id: newId,
+        type: 'banner',
+        title: 'SPECIAL ANNOUNCEMENT',
+        subtitle: 'Book your dog stay early for upcoming holiday seasons and long weekends!',
+        badge: 'PROMO NOTICE'
+      };
+    } else if (type === 'features') {
+      newPanel = {
+        id: newId,
+        type: 'features',
+        title: 'FACILITY HIGHLIGHTS',
+        subtitle: 'Safety protocols and daily routines.',
+        items: [
+          { id: '1', title: '24/7 Security', desc: 'Monitored perimeter fencing and climate control.' },
+          { id: '2', title: 'Certified Handlers', desc: 'Experienced trainers overseeing every play session.' },
+          { id: '3', title: 'Custom Diet', desc: 'Feeding according to your exact home schedule.' }
+        ]
+      };
+    } else if (type === 'testimonials') {
+      newPanel = {
+        id: newId,
+        type: 'testimonials',
+        title: 'Siddharth V.',
+        content: 'The obedience training completely transformed our energetic Golden Retriever!'
+      };
+    } else if (type === 'cards') {
+      newPanel = {
+        id: newId,
+        type: 'cards',
+        title: 'SPECIALTY PACKAGES',
+        subtitle: 'Add-on care packages for your pet.',
+        items: [
+          { id: '1', tag: 'Popular', title: 'Agility Play', price: '₹500', desc: '1-on-1 obstacle course session with a handler.' },
+          { id: '2', tag: 'Wellness', title: 'Hydro Therapy', price: '₹800', desc: 'Low impact swimming and warm splash bath.' },
+          { id: '3', tag: 'Luxury', title: 'VIP Suite', price: '₹1,500', desc: 'Includes webcam feed and orthopedic bedding.' }
+        ]
+      };
+    } else {
+      newPanel = {
+        id: newId,
+        type: 'richText',
+        title: 'CARE RULES & INFORMATION',
+        content: 'Please ensure your dog vaccination records (DHPP, Rabies, Kennel Cough) are updated prior to check-in.'
+      };
+    }
+
+    const updatedPanels = [...customPanels, newPanel];
+    const updatedContent = { ...siteContent, customPanels: updatedPanels };
+    setSiteContent(updatedContent);
+    pushToHistory(updatedContent);
+
+    try {
+      const contentDocRef = doc(db, 'content', 'main_page');
+      await setDoc(contentDocRef, { customPanels: updatedPanels }, { merge: true });
+    } catch (err) {
+      console.error("Error adding panel:", err);
+    }
+  };
+
+  const handleDeletePanel = async (id: string) => {
+    const updatedPanels = customPanels.filter((p) => p.id !== id);
+    const updatedContent = { ...siteContent, customPanels: updatedPanels };
+    setSiteContent(updatedContent);
+    pushToHistory(updatedContent);
+
+    try {
+      const contentDocRef = doc(db, 'content', 'main_page');
+      await setDoc(contentDocRef, { customPanels: updatedPanels }, { merge: true });
+    } catch (err) {
+      console.error("Error deleting panel:", err);
+    }
+  };
+
   // --- PERSIST CONTENT CHANGES ---
   const updateContent = async (key: string, value: string) => {
     // Update state immediately for visual response
     const updatedContent = { ...siteContent, [key]: value };
     setSiteContent(updatedContent);
+    pushToHistory(updatedContent);
 
     try {
       const contentDocRef = doc(db, 'content', 'main_page');
-      await updateDoc(contentDocRef, { [key]: value });
+      await setDoc(contentDocRef, { [key]: value }, { merge: true });
     } catch (err) {
       console.error("Error saving content to Firestore:", err);
     }
@@ -759,6 +886,20 @@ export default function App() {
         <div className="absolute top-[20%] left-[10%] w-[350px] md:w-[500px] h-[350px] md:h-[500px] rounded-full bg-ember/5 blur-[100px] md:blur-[130px] animate-blob" />
         <div className="absolute bottom-[20%] right-[10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full bg-steel/5 blur-[120px] md:blur-[150px] animate-blob animation-delay-2000" />
       </div>
+
+      {/* EDITING TASKBAR (Tools: Color, Font, Text Size, Undo, Redo, Add/Delete Panels) */}
+      {isAdminLoggedIn && editMode && (
+        <Taskbar
+          canUndo={historyIndex > 0}
+          canRedo={historyIndex < historyStack.length - 1}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onAddPanel={handleAddPanel}
+          customPanels={customPanels}
+          onDeletePanel={handleDeletePanel}
+          onExitEditMode={handleToggleEditMode}
+        />
+      )}
 
       {/* HEADER / NAVIGATION */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-ink-2/90 backdrop-blur-md border-b border-line">
@@ -2481,6 +2622,15 @@ export default function App() {
         </div>
       </section>
 
+      {/* --- CUSTOM DYNAMIC PANELS SECTION --- */}
+      <CustomPanelsSection
+        customPanels={customPanels}
+        siteContent={siteContent}
+        updateContent={updateContent}
+        editMode={editMode}
+        onDeletePanel={handleDeletePanel}
+      />
+
       {/* --- CONTACT SECTION --- */}
       <section id="contact" className="py-24 px-6 md:px-12">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16">
@@ -2720,20 +2870,27 @@ export default function App() {
       {/* --- FOOTER --- */}
       <footer className="border-t border-line py-16 px-6 md:px-12 bg-ink">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 text-sm">
-          <div className="flex items-center gap-4">
+          {/* EXTREME BOTTOM K9 LOGO: CLICK TO ACCESS ADMIN PANEL */}
+          <div
+            onClick={() => setIsAdminOpen(true)}
+            className="flex items-center gap-4 cursor-pointer group"
+            title="Black Prados K9 · Click for Admin Panel Access"
+            role="button"
+            tabIndex={0}
+          >
             {logoLoaded ? (
               <img
                 src="logo.jpg"
                 alt="Black Prados K9 crest"
-                className="w-10 h-10 object-cover rounded-full border border-line"
+                className="w-10 h-10 object-cover rounded-full border border-line group-hover:border-ember transition-all group-hover:scale-110 shadow-md"
                 onError={() => setLogoLoaded(false)}
               />
             ) : (
-              <div className="w-10 h-10 bg-ember text-ink flex items-center justify-center font-display rounded-full border border-line text-base font-bold">
+              <div className="w-10 h-10 bg-ember text-ink flex items-center justify-center font-display rounded-full border border-line text-base font-bold group-hover:scale-110 transition-all shadow-md">
                 K9
               </div>
             )}
-            <span className="font-display uppercase tracking-widest text-bone">
+            <span className="font-display uppercase tracking-widest text-bone group-hover:text-ember transition-colors">
               <Editable
                 textKey="header_title"
                 defaultText="Black Prados K9"
@@ -2758,15 +2915,6 @@ export default function App() {
           </div>
         </div>
       </footer>
-
-      {/* --- ADMIN TRIGGER FLOATING BUTTON --- */}
-      <button
-        onClick={() => setIsAdminOpen(true)}
-        className="fixed bottom-6 right-6 z-40 bg-ink-2/90 backdrop-blur-sm border border-line hover:border-ember text-steel hover:text-ember px-4 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest shadow-lg flex items-center gap-2 cursor-pointer transition-all"
-      >
-        <Lock className="w-3.5 h-3.5" />
-        <span>Admin Panel</span>
-      </button>
 
       {/* --- ADMIN OVERLAY DIALOG --- */}
       <AnimatePresence>

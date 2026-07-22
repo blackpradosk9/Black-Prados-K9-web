@@ -26,5 +26,26 @@ export interface GalleryImage {
 }
 
 export interface SiteContent {
-  [key: string]: string;
+  [key: string]: any;
 }
+
+export interface CustomPanelItem {
+  id: string;
+  title: string;
+  desc: string;
+  icon?: string;
+  tag?: string;
+  price?: string;
+}
+
+export interface CustomPanel {
+  id: string;
+  type: 'banner' | 'features' | 'testimonials' | 'cards' | 'richText';
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  content?: string;
+  bgStyle?: 'default' | 'dark' | 'accent' | 'card';
+  items?: CustomPanelItem[];
+}
+
